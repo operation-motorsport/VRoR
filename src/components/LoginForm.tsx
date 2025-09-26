@@ -1,0 +1,159 @@
+import { useState } from 'react';
+import { useAuth } from '../hooks/useAuth';
+
+interface LoginFormProps {
+  onSuccess?: () => void;
+}
+
+export function LoginForm({ }: LoginFormProps) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const { signIn, signUp } = useAuth();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) return;
+
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      if (isSignUp) {
+        await signUp(email, password);
+        setSuccess('Check your email for a confirmation link!');
+      } else {
+        await signIn(email, password);
+        setSuccess('Signed in successfully! Loading app...');
+        // Don't call onSuccess here - let the auth state change handle navigation
+      }
+    } catch (err: any) {
+      let errorMessage = 'An error occurred';
+
+      if (err.message.includes('too many requests')) {
+        errorMessage = 'Too many attempts. Please wait a few minutes and try again.';
+      } else if (err.message.includes('invalid')) {
+        errorMessage = 'Invalid email or password. Please check and try again.';
+      } else if (err.message.includes('confirm')) {
+        errorMessage = 'Please check your email and click the confirmation link first.';
+      } else {
+        errorMessage = err.message;
+      }
+
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center py-8 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-sm sm:max-w-md">
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <img
+              src="/vror.png"
+              alt="Veterans Race of Remembrance Logo"
+              className="h-16 w-auto"
+            />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Event Hub
+          </h1>
+        </div>
+      </div>
+
+      <div className="mt-8 w-full max-w-sm sm:max-w-md">
+        <div className="bg-white py-6 px-4 shadow rounded-lg sm:px-8">
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Email address
+              </label>
+              <div className="mt-1">
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 min-h-[44px] text-base"
+                  placeholder="Enter your email"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Password
+              </label>
+              <div className="mt-1">
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete={isSignUp ? "new-password" : "current-password"}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 min-h-[44px] text-base"
+                  placeholder="Enter your password"
+                />
+              </div>
+            </div>
+
+            {success && (
+              <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md text-sm">
+                {success}
+              </div>
+            )}
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+                {error}
+              </div>
+            )}
+
+            <div>
+              <button
+                type="submit"
+                disabled={loading || !email || !password}
+                className="btn-primary w-full justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Please wait...' : (isSignUp ? 'Sign Up' : 'Sign In')}
+              </button>
+            </div>
+          </form>
+
+          <div className="mt-6">
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => setIsSignUp(!isSignUp)}
+                className="text-primary-600 hover:text-primary-500 text-sm font-medium"
+              >
+                {isSignUp ? 'Already have an account? Sign in' : 'Need an account? Sign up'}
+              </button>
+            </div>
+          </div>
+
+          {isSignUp && (
+            <div className="mt-4 bg-blue-50 border border-blue-200 rounded-md p-4">
+              <p className="text-sm text-blue-700">
+                <strong>Note:</strong> New accounts are created with staff permissions.
+                Contact an administrator to upgrade to admin permissions for file upload access.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
