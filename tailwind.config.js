@@ -22,6 +22,7 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
+        'bebas': ['Bebas Neue', 'cursive'],
       },
     },
   },

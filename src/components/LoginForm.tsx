@@ -6,6 +6,7 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ }: LoginFormProps) {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -16,7 +17,7 @@ export function LoginForm({ }: LoginFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) return;
+    if (!name || !email || !password) return;
 
     setLoading(true);
     setError(null);
@@ -56,8 +57,8 @@ export function LoginForm({ }: LoginFormProps) {
               className="h-16 w-auto"
             />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Event Hub
+          <h1 className="text-3xl font-bebas text-gray-900 mb-2 tracking-wide">
+            Event Information Hub
           </h1>
         </div>
       </div>
@@ -65,6 +66,25 @@ export function LoginForm({ }: LoginFormProps) {
       <div className="mt-8 w-full max-w-sm sm:max-w-md">
         <div className="bg-white py-6 px-4 shadow rounded-lg sm:px-8">
           <form className="space-y-6" onSubmit={handleSubmit}>
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                Full Name
+              </label>
+              <div className="mt-1">
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  autoComplete="name"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 min-h-[44px] text-base"
+                  placeholder="Enter your full name"
+                />
+              </div>
+            </div>
+
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email address
@@ -118,7 +138,7 @@ export function LoginForm({ }: LoginFormProps) {
             <div>
               <button
                 type="submit"
-                disabled={loading || !email || !password}
+                disabled={loading || !name || !email || !password}
                 className="btn-primary w-full justify-center disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Please wait...' : 'Sign In'}

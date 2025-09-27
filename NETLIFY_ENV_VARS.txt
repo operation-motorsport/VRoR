@@ -1,0 +1,21 @@
+# Environment Variables for Netlify Deployment
+# Copy these key-value pairs to your Netlify site settings
+
+# Supabase Configuration
+VITE_SUPABASE_URL=https://nssksrckrcsoypslifir.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5zc2tzcmNrcmNzb3lwc2xpZmlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg5MDQ5NjYsImV4cCI6MjA3NDQ4MDk2Nn0.5LSqZeY8Uhu_Wx4FZiZdxXUKNzyMULEStwoij9eVwT4
+
+# Application Configuration
+VITE_APP_NAME=OPMO Veterans Race
+VITE_APP_VERSION=1.0.0
+
+# Instructions:
+# 1. Go to your Netlify site dashboard
+# 2. Navigate to Site settings > Environment variables
+# 3. Add each variable above with its corresponding value
+# 4. Replace the Supabase URL and key with your actual values from Supabase dashboard
+# 5. Redeploy your site after adding the variables
+
+# To find your Supabase values:
+# - URL: Supabase Dashboard > Settings > API > Project URL
+# - Anon Key: Supabase Dashboard > Settings > API > Project API keys > anon public
