@@ -8,12 +8,11 @@ interface LoginFormProps {
 export function LoginForm({ }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const { signIn, signUp } = useAuth();
+  const { signIn } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,14 +23,9 @@ export function LoginForm({ }: LoginFormProps) {
     setSuccess(null);
 
     try {
-      if (isSignUp) {
-        await signUp(email, password);
-        setSuccess('Check your email for a confirmation link!');
-      } else {
-        await signIn(email, password);
-        setSuccess('Signed in successfully! Loading app...');
-        // Don't call onSuccess here - let the auth state change handle navigation
-      }
+      await signIn(email, password);
+      setSuccess('Signed in successfully! Loading app...');
+      // Don't call onSuccess here - let the auth state change handle navigation
     } catch (err: any) {
       let errorMessage = 'An error occurred';
 
@@ -99,7 +93,7 @@ export function LoginForm({ }: LoginFormProps) {
                   id="password"
                   name="password"
                   type="password"
-                  autoComplete={isSignUp ? "new-password" : "current-password"}
+                  autoComplete="current-password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -127,31 +121,16 @@ export function LoginForm({ }: LoginFormProps) {
                 disabled={loading || !email || !password}
                 className="btn-primary w-full justify-center disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Please wait...' : (isSignUp ? 'Sign Up' : 'Sign In')}
+                {loading ? 'Please wait...' : 'Sign In'}
               </button>
             </div>
           </form>
 
-          <div className="mt-6">
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={() => setIsSignUp(!isSignUp)}
-                className="text-primary-600 hover:text-primary-500 text-sm font-medium"
-              >
-                {isSignUp ? 'Already have an account? Sign in' : 'Need an account? Sign up'}
-              </button>
-            </div>
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Don't have an account? Contact your administrator.
+            </p>
           </div>
-
-          {isSignUp && (
-            <div className="mt-4 bg-blue-50 border border-blue-200 rounded-md p-4">
-              <p className="text-sm text-blue-700">
-                <strong>Note:</strong> New accounts are created with staff permissions.
-                Contact an administrator to upgrade to admin permissions for file upload access.
-              </p>
-            </div>
-          )}
         </div>
       </div>
     </div>
