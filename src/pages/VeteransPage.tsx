@@ -18,7 +18,8 @@ export function VeteransPage() {
     service_years: '',
     medical_notes: '',
     emergency_contact_name: '',
-    emergency_contact_phone: ''
+    emergency_contact_phone: '',
+    race_team_name: ''
   });
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -110,7 +111,8 @@ export function VeteransPage() {
           service_years: addFormData.service_years || null,
           medical_notes: addFormData.medical_notes || null,
           emergency_contact_name: addFormData.emergency_contact_name || null,
-          emergency_contact_phone: addFormData.emergency_contact_phone || null
+          emergency_contact_phone: addFormData.emergency_contact_phone || null,
+          race_team_name: addFormData.race_team_name || null
         }])
         .select()
         .single();
@@ -136,7 +138,8 @@ export function VeteransPage() {
         service_years: '',
         medical_notes: '',
         emergency_contact_name: '',
-        emergency_contact_phone: ''
+        emergency_contact_phone: '',
+        race_team_name: ''
       });
 
       setShowAddForm(false);
@@ -159,7 +162,8 @@ export function VeteransPage() {
       service_years: '',
       medical_notes: '',
       emergency_contact_name: '',
-      emergency_contact_phone: ''
+      emergency_contact_phone: '',
+      race_team_name: ''
     });
     setSubmitError(null);
     setSubmitSuccess(null);
@@ -242,13 +246,30 @@ export function VeteransPage() {
                   <h3 className="font-semibold text-gray-900">
                     {veteran.first_name} {veteran.last_name}
                   </h3>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {veteran.military_branch}
-                    {veteran.service_years && ` • ${veteran.service_years}`}
-                  </p>
-                  {veteran.email && (
-                    <p className="text-sm text-gray-500 mt-1">{veteran.email}</p>
-                  )}
+                  <div className="mt-1 space-y-1">
+                    {veteran.phone && (
+                      <p className="text-sm text-gray-600">
+                        📞 {veteran.phone}
+                      </p>
+                    )}
+                    {veteran.email && (
+                      <p className="text-sm text-gray-600">
+                        📧 {veteran.email}
+                      </p>
+                    )}
+                    {veteran.race_team_name && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent opening veteran details
+                          // TODO: Show race team info modal
+                          alert(`Race Team: ${veteran.race_team_name}\n\nRace team details will be shown here.`);
+                        }}
+                        className="text-sm text-blue-600 hover:text-blue-800 underline mt-1 block"
+                      >
+                        🏎️ {veteran.race_team_name}
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div className="text-right">
                   <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -402,6 +423,19 @@ export function VeteransPage() {
                 </div>
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Race Team
+                </label>
+                <input
+                  type="text"
+                  value={addFormData.race_team_name}
+                  onChange={(e) => setAddFormData({ ...addFormData, race_team_name: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="e.g., Thunder Racing Team"
+                />
+              </div>
+
               <div className="flex space-x-3 pt-4 border-t border-gray-200">
                 <button
                   type="button"
@@ -486,6 +520,21 @@ export function VeteransPage() {
                   </p>
                 </div>
               </div>
+
+              {selectedVeteran.race_team_name && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-700 mb-1">Race Team</h3>
+                  <button
+                    onClick={() => {
+                      // TODO: Show race team contact info modal
+                      alert(`Race Team: ${selectedVeteran.race_team_name}\n\nRace team contact details will be shown here.`);
+                    }}
+                    className="text-sm text-blue-600 hover:text-blue-800 underline"
+                  >
+                    🏎️ {selectedVeteran.race_team_name}
+                  </button>
+                </div>
+              )}
 
               <div className="pt-4 border-t border-gray-200">
                 <button

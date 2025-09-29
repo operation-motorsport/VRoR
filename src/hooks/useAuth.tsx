@@ -24,6 +24,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isAdmin = user?.role === 'admin';
 
   useEffect(() => {
+    // Check if user just logged out
+    const justLoggedOut = sessionStorage.getItem('justLoggedOut');
+    if (justLoggedOut) {
+      sessionStorage.removeItem('justLoggedOut');
+      setSession(null);
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+
     // Get initial session
     const getSession = async () => {
       try {
@@ -150,8 +160,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    try {
+      console.log('Signing out user...');
+
+      // Set logout flag before clearing session storage
+      sessionStorage.setItem('justLoggedOut', 'true');
+
+      // Clear local state immediately
+      setSession(null);
+      setUser(null);
+
+      // Force clear all Supabase storage keys
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('supabase.auth')) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+
+      // Sign out from Supabase after clearing storage
+      await supabase.auth.signOut({ scope: 'global' });
+
+      console.log('User signed out successfully');
+
+      // Navigate to login instead of reload to prevent auth state restoration
+      window.location.href = window.location.origin;
+
+    } catch (error) {
+      console.error('Error during sign out:', error);
+      // Even if there's an error, clear everything and navigate
+      sessionStorage.setItem('justLoggedOut', 'true');
+      setSession(null);
+      setUser(null);
+
+      // Clear all storage
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('supabase.auth')) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+
+      window.location.href = window.location.origin;
+    }
   };
 
   const value = {

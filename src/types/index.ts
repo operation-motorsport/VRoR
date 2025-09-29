@@ -19,6 +19,7 @@ export interface Veteran {
   medical_notes?: string;
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
+  race_team_name?: string;
   created_at: string;
   updated_at: string;
 }
