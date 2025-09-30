@@ -249,7 +249,7 @@ export function VeteransPage() {
       email: veteran.email || '',
       phone: veteran.phone || '',
       military_branch: veteran.military_branch,
-      service_years: veteran.service_years,
+      service_years: veteran.service_years || '',
       medical_notes: veteran.medical_notes || '',
       emergency_contact_name: veteran.emergency_contact_name || '',
       emergency_contact_phone: veteran.emergency_contact_phone || '',
@@ -291,7 +291,20 @@ export function VeteransPage() {
       // For now, just update mock data since we're using mock veterans
       setVeterans(veterans.map(v =>
         v.id === editingVeteran.id
-          ? { ...v, ...editFormData }
+          ? {
+              ...v,
+              first_name: editFormData.first_name,
+              last_name: editFormData.last_name,
+              email: editFormData.email || undefined,
+              phone: editFormData.phone || undefined,
+              military_branch: editFormData.military_branch,
+              service_years: editFormData.service_years || '',
+              medical_notes: editFormData.medical_notes || undefined,
+              emergency_contact_name: editFormData.emergency_contact_name || undefined,
+              emergency_contact_phone: editFormData.emergency_contact_phone || undefined,
+              race_team_name: editFormData.race_team_name || undefined,
+              updated_at: new Date().toISOString()
+            }
           : v
       ));
       setSubmitSuccess(`Beneficiary ${editFormData.first_name} ${editFormData.last_name} updated successfully!`);
