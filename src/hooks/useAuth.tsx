@@ -69,15 +69,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // Fallback timeout to prevent perpetual loading
-    const timeoutId = setTimeout(() => {
-      console.log('Auth timeout - setting loading to false');
-      setLoading(false);
-    }, 10000); // 10 second timeout
-
     return () => {
       subscription.unsubscribe();
-      clearTimeout(timeoutId);
     };
   }, []);
 
@@ -101,8 +94,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         if (userProfile) {
-          console.log('User profile found in database:', userProfile);
+          console.log('✅ User profile found in database:', userProfile);
           setUser(userProfile);
+          console.log('🔄 Setting loading=false after database profile found');
           setLoading(false);
           return;
         }
@@ -120,6 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         updated_at: new Date().toISOString()
       });
       console.log('Temporary user profile created with staff role');
+      console.log('🔄 Setting loading=false after temporary profile created');
       setLoading(false);
 
       // TODO: Re-enable database query after fixing connection issues
@@ -161,6 +156,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       });
+      console.log('🔄 Setting loading=false after error fallback');
+      setLoading(false);
     }
   };
 
