@@ -85,20 +85,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log('Fetching user profile for:', authUser.id);
 
-      // TEMPORARY: Skip database query and create user object directly
-      // This allows the app to work while we debug database issues
-      console.log('Creating temporary user profile...');
+      // Try to fetch user profile from database first
+      console.log('Fetching user profile from database...');
+
+      try {
+        const { data: userProfile, error: profileError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', authUser.id)
+          .single();
+
+        if (profileError) {
+          console.error('Database error fetching user profile:', profileError);
+          throw profileError;
+        }
+
+        if (userProfile) {
+          console.log('User profile found in database:', userProfile);
+          setUser(userProfile);
+          setLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.error('Failed to fetch user profile, creating temporary one:', error);
+      }
+
+      // Fallback: Create temporary user profile with staff role (not admin)
+      console.log('Creating temporary user profile with staff role...');
       setUser({
         id: authUser.id,
         email: authUser.email || '',
-        role: 'admin', // Making you admin for testing
+        role: 'staff', // Default to staff, not admin
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       });
-      console.log('Temporary user profile created');
-      // Ensure loading is set to false after user creation
+      console.log('Temporary user profile created with staff role');
       setLoading(false);
-      return;
 
       // TODO: Re-enable database query after fixing connection issues
       /*
