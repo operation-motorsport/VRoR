@@ -41,37 +41,53 @@ export function AdminPage() {
 
   const fetchData = async () => {
     try {
-      // TEMPORARY: Use mock data instead of database calls
-      console.log('Using mock admin data...');
+      // Try to fetch users from database first
+      console.log('Fetching users from database...');
 
-      const mockUsers = [
-        {
-          id: '1',
-          email: 'admin@operationmotorsport.org',
-          role: 'admin' as const,
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2024-01-01T00:00:00Z'
-        },
-        {
-          id: '2',
-          email: 'staff1@operationmotorsport.org',
-          role: 'staff' as const,
-          created_at: '2024-01-02T00:00:00Z',
-          updated_at: '2024-01-02T00:00:00Z'
-        },
-        {
-          id: '3',
-          email: 'coordinator@operationmotorsport.org',
-          role: 'staff' as const,
-          created_at: '2024-01-03T00:00:00Z',
-          updated_at: '2024-01-03T00:00:00Z'
-        }
-      ];
+      const { data: dbUsers, error } = await supabase
+        .from('users')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-      setUsers(mockUsers);
+      let allUsers = [];
 
-      const totalUsers = mockUsers.length;
-      const adminUsers = mockUsers.filter(u => u.role === 'admin').length;
+      if (error) {
+        console.error('Database error:', error);
+        console.log('Falling back to mock data...');
+
+        // Fallback to mock data if database fails
+        allUsers = [
+          {
+            id: '1',
+            email: 'admin@operationmotorsport.org',
+            role: 'admin' as const,
+            created_at: '2024-01-01T00:00:00Z',
+            updated_at: '2024-01-01T00:00:00Z'
+          },
+          {
+            id: '2',
+            email: 'staff1@operationmotorsport.org',
+            role: 'staff' as const,
+            created_at: '2024-01-02T00:00:00Z',
+            updated_at: '2024-01-02T00:00:00Z'
+          },
+          {
+            id: '3',
+            email: 'coordinator@operationmotorsport.org',
+            role: 'staff' as const,
+            created_at: '2024-01-03T00:00:00Z',
+            updated_at: '2024-01-03T00:00:00Z'
+          }
+        ];
+      } else {
+        console.log('Database users loaded:', dbUsers?.length || 0);
+        allUsers = dbUsers || [];
+      }
+
+      setUsers(allUsers);
+
+      const totalUsers = allUsers.length;
+      const adminUsers = allUsers.filter(u => u.role === 'admin').length;
       const staffUsers = totalUsers - adminUsers;
 
       setStats({

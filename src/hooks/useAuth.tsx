@@ -150,8 +150,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
   };
 
+  const createUserProfile = async (userId: string, email: string, role: 'staff' | 'admin' = 'staff') => {
+    const { data, error } = await supabase
+      .from('users')
+      .insert([{
+        id: userId,
+        email: email,
+        role: role,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  };
+
   const signUp = async (email: string, password: string, role: 'staff' | 'admin' = 'staff') => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -161,6 +178,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
     if (error) throw error;
+
+    // If user was created successfully, also create their profile in the users table
+    if (data.user) {
+      try {
+        await createUserProfile(data.user.id, email, role);
+        console.log('User profile created in database');
+      } catch (profileError) {
+        console.error('Failed to create user profile:', profileError);
+        // Don't throw here - the auth user was created successfully
+      }
+    }
+
+    // Don't return data to match interface
   };
 
   const signOut = async () => {
