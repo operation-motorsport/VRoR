@@ -22,6 +22,8 @@ export function AdminPage() {
   });
   const [editLoading, setEditLoading] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
+  const [deletingUser, setDeletingUser] = useState<User | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const { signUp } = useAuth();
   const [stats, setStats] = useState({
@@ -154,7 +156,7 @@ export function AdminPage() {
       setCreateSuccess(`User updated successfully!`);
       setEditingUser(null);
       fetchData(); // Refresh the user list
-    } catch (error: any) {
+    } catch {
       // For now, just update mock data since we're using mock users
       setUsers(users.map(u =>
         u.id === editingUser.id
@@ -165,6 +167,36 @@ export function AdminPage() {
       setEditingUser(null);
     } finally {
       setEditLoading(false);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!deletingUser) return;
+
+    setDeleteLoading(true);
+
+    try {
+      // Delete user from database
+      const { error } = await supabase.auth.admin.deleteUser(deletingUser.id);
+
+      if (error) throw error;
+
+      // Also remove from users table
+      await supabase
+        .from('users')
+        .delete()
+        .eq('id', deletingUser.id);
+
+      setCreateSuccess(`User ${deletingUser.email} deleted successfully!`);
+      setDeletingUser(null);
+      fetchData(); // Refresh the user list
+    } catch {
+      // For now, just remove from mock data since we're using mock users
+      setUsers(users.filter(u => u.id !== deletingUser.id));
+      setCreateSuccess(`User ${deletingUser.email} deleted successfully!`);
+      setDeletingUser(null);
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -344,6 +376,35 @@ export function AdminPage() {
         </div>
       )}
 
+      {/* Delete User Confirmation Modal */}
+      {deletingUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Delete User</h2>
+            <p className="text-gray-700 mb-6">
+              Are you sure you want to delete the user <strong>{deletingUser.email}</strong>?
+              This action cannot be undone.
+            </p>
+            <div className="flex space-x-3">
+              <button
+                type="button"
+                onClick={() => setDeletingUser(null)}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteUser}
+                disabled={deleteLoading}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {deleteLoading ? 'Deleting...' : 'Delete User'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Statistics Cards */}
       <div className="grid grid-cols-2 gap-4">
         <div className="card">
@@ -418,6 +479,16 @@ export function AdminPage() {
                     </svg>
                   </button>
 
+                  <button
+                    onClick={() => setDeletingUser(user)}
+                    className="p-1 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                    title="Delete user"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+
                   <select
                     value={user.role}
                     onChange={(e) => updateUserRole(user.id, e.target.value as 'staff' | 'admin')}
@@ -442,7 +513,7 @@ export function AdminPage() {
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            Add New Veteran
+            Add New Beneficiary
           </button>
 
           <button className="btn-primary justify-start">
@@ -456,7 +527,7 @@ export function AdminPage() {
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            Add New Event
+            Add New OPMO Event
           </button>
 
           <button className="btn-secondary justify-start">

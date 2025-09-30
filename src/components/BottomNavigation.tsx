@@ -9,7 +9,7 @@ export function BottomNavigation() {
   const navItems = [
     {
       id: 'veterans',
-      label: 'Veterans',
+      label: 'Beneficiaries',
       path: '/veterans',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -19,7 +19,7 @@ export function BottomNavigation() {
     },
     {
       id: 'teams',
-      label: 'Teams',
+      label: 'Race Teams',
       path: '/teams',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -29,7 +29,7 @@ export function BottomNavigation() {
     },
     {
       id: 'events',
-      label: 'Events',
+      label: 'OPMO Events',
       path: '/events',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -39,7 +39,7 @@ export function BottomNavigation() {
     },
     {
       id: 'schedule',
-      label: 'Schedule',
+      label: 'Race Schedule',
       path: '/schedule',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
