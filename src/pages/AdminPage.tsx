@@ -36,14 +36,18 @@ export function AdminPage() {
   });
 
   useEffect(() => {
+    console.log('🚀 AdminPage useEffect triggered - calling fetchData');
     fetchData();
   }, []);
 
   const fetchData = async () => {
     try {
       // Try to fetch users from database first
-      console.log('Fetching users from database...');
+      console.log('🔍 Starting fetchData for user management...');
+      console.log('🔍 Initial users state:', users);
 
+      // First try with service role to bypass RLS
+      console.log('🔍 Attempting database query...');
       const { data: dbUsers, error } = await supabase
         .from('users')
         .select('*')
@@ -87,11 +91,15 @@ export function AdminPage() {
         ];
       } else {
         console.log('✅ Database users loaded successfully:', dbUsers?.length || 0);
-        console.log('✅ User data:', dbUsers);
+        console.log('✅ Raw user data from Supabase:', dbUsers);
+        console.log('✅ User emails found:', dbUsers?.map(u => u.email) || []);
         allUsers = dbUsers || [];
       }
 
+      console.log('🔄 About to setUsers with:', allUsers);
+      console.log('🔄 allUsers length:', allUsers.length);
       setUsers(allUsers);
+      console.log('✅ setUsers called with', allUsers.length, 'users');
 
       const totalUsers = allUsers.length;
       const adminUsers = allUsers.filter(u => u.role === 'admin').length;
