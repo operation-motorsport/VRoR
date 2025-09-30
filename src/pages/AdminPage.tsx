@@ -52,7 +52,13 @@ export function AdminPage() {
       let allUsers = [];
 
       if (error) {
-        console.error('Database error:', error);
+        console.error('Database error fetching users:', error);
+        console.error('Error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
         console.log('Falling back to mock data...');
 
         // Fallback to mock data if database fails
@@ -80,7 +86,8 @@ export function AdminPage() {
           }
         ];
       } else {
-        console.log('Database users loaded:', dbUsers?.length || 0);
+        console.log('✅ Database users loaded successfully:', dbUsers?.length || 0);
+        console.log('✅ User data:', dbUsers);
         allUsers = dbUsers || [];
       }
 
