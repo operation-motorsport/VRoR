@@ -43,10 +43,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(initialSession);
         if (initialSession?.user) {
           await fetchUserProfile(initialSession.user);
+        } else {
+          // No session found, stop loading
+          setLoading(false);
         }
       } catch (error) {
         console.error('Error getting session:', error);
-      } finally {
         setLoading(false);
       }
     };

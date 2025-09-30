@@ -11,7 +11,7 @@ export function ProtectedRoute({ children, adminOnly = false }: ProtectedRoutePr
   const { user, loading } = useAuth();
 
   // Emergency debug mode - remove this after fixing auth issues
-  const DEBUG_MODE = true; // TEMPORARY: Set to true to bypass auth while fixing loading issue
+  const DEBUG_MODE = false; // Disabled debug mode - auth should work properly now
 
   if (DEBUG_MODE) {
     console.log('DEBUG MODE: Bypassing auth');
