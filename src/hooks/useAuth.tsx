@@ -94,6 +94,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         updated_at: new Date().toISOString()
       });
       console.log('Temporary user profile created');
+      // Ensure loading is set to false after user creation
+      setLoading(false);
       return;
 
       // TODO: Re-enable database query after fixing connection issues
