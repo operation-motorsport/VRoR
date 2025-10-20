@@ -10,6 +10,8 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children, adminOnly = false }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
 
+  console.log('ProtectedRoute render - loading:', loading, 'user:', user ? 'present' : 'null', 'adminOnly:', adminOnly);
+
   // Emergency debug mode - remove this after fixing auth issues
   const DEBUG_MODE = false; // Disabled debug mode - auth should work properly now
 
@@ -33,8 +35,11 @@ export function ProtectedRoute({ children, adminOnly = false }: ProtectedRoutePr
   }
 
   if (!user) {
+    console.log('ProtectedRoute: No user, showing LoginForm');
     return <LoginForm />;
   }
+
+  console.log('ProtectedRoute: User authenticated, showing children');
 
   if (adminOnly && user.role !== 'admin') {
     return (

@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -12,7 +13,16 @@ export function LoginForm({ }: LoginFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const { signIn } = useAuth();
+  const { signIn, user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect to veterans page when user is authenticated
+  useEffect(() => {
+    if (user && !authLoading) {
+      console.log('✅ User authenticated, redirecting to /veterans');
+      navigate('/veterans', { replace: true });
+    }
+  }, [user, authLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,9 +33,11 @@ export function LoginForm({ }: LoginFormProps) {
     setSuccess(null);
 
     try {
+      console.log('🔄 Attempting to sign in...');
       await signIn(email, password);
-      setSuccess('Signed in successfully! Loading app...');
-      // Don't call onSuccess here - let the auth state change handle navigation
+      console.log('✅ Sign in successful, waiting for auth state update...');
+      setSuccess('Signed in successfully! Redirecting...');
+      // Navigation will happen in useEffect when user state is set
     } catch (err: any) {
       let errorMessage = 'An error occurred';
 
