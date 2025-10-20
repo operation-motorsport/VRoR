@@ -185,13 +185,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ];
 
       const userEmail = authUser.email || '';
-      const userRole = adminEmails.includes(userEmail.toLowerCase()) ? 'admin' : 'staff';
+      const userRole: 'admin' | 'staff' = adminEmails.includes(userEmail.toLowerCase()) ? 'admin' : 'staff';
 
       console.log(`Creating temporary user profile with ${userRole} role for ${userEmail}...`);
       const tempUser = {
         id: authUser.id,
         email: userEmail,
-        role: userRole as const,
+        role: userRole,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
