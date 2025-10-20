@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './hooks/useAuth';
 import { Layout } from './components/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { VeteransPage } from './pages/VeteransPage';
 import { TeamsPage } from './pages/TeamsPage';
 import { EventsPage } from './pages/EventsPage';
@@ -10,10 +11,11 @@ import { AdminPage } from './pages/AdminPage';
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Layout>
-          <Routes>
+    <ErrorBoundary>
+      <AuthProvider>
+        <Router>
+          <Layout>
+            <Routes>
             <Route
               path="/"
               element={<Navigate to="/veterans" replace />}
@@ -67,6 +69,7 @@ function App() {
         </Layout>
       </Router>
     </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

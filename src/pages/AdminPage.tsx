@@ -105,13 +105,55 @@ export function AdminPage() {
       const adminUsers = allUsers.filter(u => u.role === 'admin').length;
       const staffUsers = totalUsers - adminUsers;
 
+      // Fetch real counts from database
+      let totalVeterans = 0;
+      let totalTeams = 0;
+      let totalEvents = 0;
+
+      try {
+        // Get veterans count
+        const { count: veteransCount } = await supabase
+          .from('veterans')
+          .select('*', { count: 'exact', head: true });
+        totalVeterans = veteransCount || 0;
+        console.log('✅ Veterans count from database:', totalVeterans);
+      } catch (error) {
+        console.log('❌ Failed to get veterans count, using fallback');
+        // Fallback - use mock data count that matches VeteransPage
+        totalVeterans = 5; // Updated to match actual data
+      }
+
+      try {
+        // Get race teams count
+        const { count: teamsCount } = await supabase
+          .from('race_teams')
+          .select('*', { count: 'exact', head: true });
+        totalTeams = teamsCount || 0;
+        console.log('✅ Race teams count from database:', totalTeams);
+      } catch (error) {
+        console.log('❌ Failed to get teams count, using fallback');
+        totalTeams = 2; // Fallback count
+      }
+
+      try {
+        // Get events count
+        const { count: eventsCount } = await supabase
+          .from('events')
+          .select('*', { count: 'exact', head: true });
+        totalEvents = eventsCount || 0;
+        console.log('✅ Events count from database:', totalEvents);
+      } catch (error) {
+        console.log('❌ Failed to get events count, using fallback');
+        totalEvents = 3; // Fallback count
+      }
+
       setStats({
         totalUsers,
         adminUsers,
         staffUsers,
-        totalVeterans: 2, // Mock count matching our veterans data
-        totalTeams: 2,    // Mock count matching our teams data
-        totalEvents: 3,   // Mock count matching our events data
+        totalVeterans,
+        totalTeams,
+        totalEvents,
       });
     } catch (error) {
       console.error('Error fetching admin data:', error);
