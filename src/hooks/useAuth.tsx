@@ -153,17 +153,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log('Fetching user profile for:', authUser.id);
 
       // For now, always create a temporary user profile to avoid database issues
-      console.log('Creating temporary user profile with staff role...');
+      // Check if user should have admin role based on email
+      const adminEmails = [
+        'ntdow@outlook.com',
+        'tiffany.lodder@operationmotorsport.org',
+        'jason.leach@operationmotorsport.org',
+        'admin@operationmotorsport.org'
+      ];
+
+      const userEmail = authUser.email || '';
+      const userRole = adminEmails.includes(userEmail.toLowerCase()) ? 'admin' : 'staff';
+
+      console.log(`Creating temporary user profile with ${userRole} role for ${userEmail}...`);
       const tempUser = {
         id: authUser.id,
-        email: authUser.email || '',
-        role: 'staff' as const, // Default to staff, not admin
+        email: userEmail,
+        role: userRole as const,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
 
       setUserWithDebug(tempUser);
-      console.log('Temporary user profile created with staff role:', tempUser);
+      console.log(`Temporary user profile created with ${userRole} role:`, tempUser);
 
     } catch (error) {
       console.error('Error creating user profile:', error);

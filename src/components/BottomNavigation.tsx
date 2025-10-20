@@ -6,7 +6,7 @@ export function BottomNavigation() {
   const navigate = useNavigate();
   const { isAdmin, user } = useAuth();
 
-  console.log('🧭 BottomNavigation render - user:', user ? 'present' : 'null', 'location:', location.pathname);
+  console.log('🧭 BottomNavigation render - user:', user ? 'present' : 'null', 'isAdmin:', isAdmin, 'userRole:', user?.role, 'location:', location.pathname);
 
   const navItems = [
     {
