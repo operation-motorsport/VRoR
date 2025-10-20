@@ -152,8 +152,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log('Fetching user profile for:', authUser.id);
 
-      // For now, always create a temporary user profile to avoid database issues
-      // Check if user should have admin role based on email
+      // Try to fetch user profile from database first
+      try {
+        console.log('🔍 Attempting to fetch user profile from database...');
+        const { data: userProfile, error: profileError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', authUser.id)
+          .single();
+
+        if (profileError) {
+          console.error('❌ Database error fetching user profile:', profileError);
+          throw profileError;
+        }
+
+        if (userProfile) {
+          console.log('✅ User profile found in database:', userProfile);
+          setUserWithDebug(userProfile);
+          return;
+        }
+      } catch (error) {
+        console.error('❌ Failed to fetch user profile from database:', error);
+      }
+
+      // Fallback: Create temporary user profile with email-based role assignment
+      console.log('🔄 Falling back to temporary user profile creation...');
       const adminEmails = [
         'ntdow@outlook.com',
         'tiffany.lodder@operationmotorsport.org',
