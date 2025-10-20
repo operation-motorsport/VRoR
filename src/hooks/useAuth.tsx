@@ -31,6 +31,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sessionId: newSession?.user?.id,
       timestamp: new Date().toISOString()
     });
+
+    // Store session state in sessionStorage for persistence
+    if (newSession) {
+      sessionStorage.setItem('authSession', JSON.stringify({
+        access_token: newSession.access_token,
+        user: newSession.user,
+        timestamp: Date.now()
+      }));
+    } else {
+      sessionStorage.removeItem('authSession');
+    }
+
     setSession(newSession);
   };
 
@@ -41,6 +53,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       timestamp: new Date().toISOString(),
       stack: new Error().stack?.split('\n').slice(1, 4)
     });
+
+    // Store user state in sessionStorage for persistence
+    if (newUser) {
+      sessionStorage.setItem('authUser', JSON.stringify(newUser));
+    } else {
+      sessionStorage.removeItem('authUser');
+    }
+
     setUser(newUser);
   };
 
@@ -93,15 +113,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } catch (error) {
         console.error('❌ Error getting session:', error);
-        console.log('🔄 Falling back to no session state');
+        console.log('🔄 Attempting to recover from sessionStorage...');
 
-        // Don't clear session on network errors - let the user try to navigate first
-        if (error instanceof Error && error.message.includes('timeout')) {
-          console.log('⚠️ Timeout error - keeping existing state');
-        } else {
-          setSessionWithDebug(null);
-          setUserWithDebug(null);
+        // Try to recover from sessionStorage
+        try {
+          const storedUser = sessionStorage.getItem('authUser');
+          const storedSession = sessionStorage.getItem('authSession');
+
+          if (storedUser && storedSession) {
+            console.log('✅ Recovered auth state from sessionStorage');
+            const parsedUser = JSON.parse(storedUser);
+            setUserWithDebug(parsedUser);
+            // Don't set session from storage as it might be stale
+            setLoading(false);
+            return;
+          }
+        } catch (recoveryError) {
+          console.error('❌ Failed to recover from sessionStorage:', recoveryError);
         }
+
+        // Final fallback
+        console.log('🔄 No recovery possible, clearing state');
+        setSessionWithDebug(null);
+        setUserWithDebug(null);
         setLoading(false);
       }
     };
