@@ -12,8 +12,8 @@ export function ProtectedRoute({ children, adminOnly = false }: ProtectedRoutePr
 
   console.log('ProtectedRoute render - loading:', loading, 'user:', user ? 'present' : 'null', 'adminOnly:', adminOnly);
 
-  // Emergency debug mode - enable temporarily to bypass auth issues
-  const DEBUG_MODE = true; // TEMPORARY: Enable to bypass auth while debugging
+  // Emergency debug mode - remove this after fixing auth issues
+  const DEBUG_MODE = false; // Disabled debug mode - auth should work properly now
 
   if (DEBUG_MODE) {
     console.log('DEBUG MODE: Bypassing auth');
