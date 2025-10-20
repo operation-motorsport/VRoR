@@ -72,8 +72,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         console.error('❌ Error getting session:', error);
         console.log('🔄 Falling back to no session state');
-        setSession(null);
-        setUser(null);
+
+        // Don't clear session on network errors - let the user try to navigate first
+        if (error instanceof Error && error.message.includes('timeout')) {
+          console.log('⚠️ Timeout error - keeping existing state');
+        } else {
+          setSession(null);
+          setUser(null);
+        }
         setLoading(false);
       }
     };
@@ -84,13 +90,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('🔄 Auth state change event:', event, 'Session:', session);
+
+        // Always update session to keep it in sync
         setSession(session);
-        if (session?.user) {
-          console.log('👤 User found in auth change, fetching profile...');
+
+        // Handle different auth events
+        if (event === 'SIGNED_IN' && session?.user) {
+          console.log('👤 User signed in, fetching profile...');
           await fetchUserProfile(session.user);
-        } else {
-          console.log('❌ No user in auth change, clearing state');
+        } else if (event === 'TOKEN_REFRESHED' && session?.user) {
+          console.log('🔄 Token refreshed, updating profile if needed...');
+          if (!user || user.id !== session.user.id) {
+            await fetchUserProfile(session.user);
+          } else {
+            // User is already set and matches, just ensure loading is false
+            setLoading(false);
+          }
+        } else if (event === 'SIGNED_OUT' || (!session && event !== 'INITIAL_SESSION')) {
+          console.log('❌ User signed out or session lost, clearing state');
           setUser(null);
+          setLoading(false);
+        } else if (event === 'INITIAL_SESSION') {
+          console.log('🔄 Initial session event, handling in getSession');
+          // Don't do anything here, let getSession handle it
+        } else {
+          console.log('🚫 Unhandled auth event:', event);
           setLoading(false);
         }
       }
