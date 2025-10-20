@@ -23,13 +23,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isAdmin = user?.role === 'admin';
 
+  // Debug wrapper functions to track state changes
+  const setSessionWithDebug = (newSession: Session | null) => {
+    console.log('🔄 SESSION STATE CHANGE:', {
+      from: session ? 'has session' : 'no session',
+      to: newSession ? 'has session' : 'no session',
+      sessionId: newSession?.user?.id,
+      timestamp: new Date().toISOString()
+    });
+    setSession(newSession);
+  };
+
+  const setUserWithDebug = (newUser: User | null) => {
+    console.log('👤 USER STATE CHANGE:', {
+      from: user ? `${user.email} (${user.id})` : 'no user',
+      to: newUser ? `${newUser.email} (${newUser.id})` : 'no user',
+      timestamp: new Date().toISOString(),
+      stack: new Error().stack?.split('\n').slice(1, 4)
+    });
+    setUser(newUser);
+  };
+
   useEffect(() => {
     // Check if user just logged out
     const justLoggedOut = sessionStorage.getItem('justLoggedOut');
     if (justLoggedOut) {
       sessionStorage.removeItem('justLoggedOut');
-      setSession(null);
-      setUser(null);
+      console.log('🚪 JUST LOGGED OUT FLAG DETECTED');
+      setSessionWithDebug(null);
+      setUserWithDebug(null);
       setLoading(false);
       return;
     }
@@ -38,8 +60,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const loadingTimeout = setTimeout(() => {
       console.warn('⚠️ Loading timeout reached, forcing loading=false');
       console.log('🔄 Timeout fallback: clearing auth state');
-      setSession(null);
-      setUser(null);
+      setSessionWithDebug(null);
+      setUserWithDebug(null);
       setLoading(false);
     }, 8000); // 8 second timeout (session fetch has 5s timeout)
 
@@ -60,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         ]) as any;
 
         console.log('✅ Initial session retrieved:', initialSession);
-        setSession(initialSession);
+        setSessionWithDebug(initialSession);
 
         if (initialSession?.user) {
           console.log('👤 User found in session, fetching profile...');
@@ -77,8 +99,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (error instanceof Error && error.message.includes('timeout')) {
           console.log('⚠️ Timeout error - keeping existing state');
         } else {
-          setSession(null);
-          setUser(null);
+          setSessionWithDebug(null);
+          setUserWithDebug(null);
         }
         setLoading(false);
       }
@@ -92,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log('🔄 Auth state change event:', event, 'Session:', session);
 
         // Always update session to keep it in sync
-        setSession(session);
+        setSessionWithDebug(session);
 
         // Handle different auth events
         if (event === 'SIGNED_IN' && session?.user) {
@@ -108,7 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         } else if (event === 'SIGNED_OUT' || (!session && event !== 'INITIAL_SESSION')) {
           console.log('❌ User signed out or session lost, clearing state');
-          setUser(null);
+          setUserWithDebug(null);
           setLoading(false);
         } else if (event === 'INITIAL_SESSION') {
           console.log('🔄 Initial session event, handling in getSession');
@@ -140,13 +162,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         updated_at: new Date().toISOString()
       };
 
-      setUser(tempUser);
+      setUserWithDebug(tempUser);
       console.log('Temporary user profile created with staff role:', tempUser);
 
     } catch (error) {
       console.error('Error creating user profile:', error);
       // Even on error, create minimal user object
-      setUser({
+      setUserWithDebug({
         id: authUser.id,
         email: authUser.email || '',
         role: 'staff',
@@ -219,8 +241,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sessionStorage.setItem('justLoggedOut', 'true');
 
       // Clear local state immediately
-      setSession(null);
-      setUser(null);
+      setSessionWithDebug(null);
+      setUserWithDebug(null);
 
       // Force clear all Supabase storage keys
       const keysToRemove = [];
@@ -244,8 +266,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Error during sign out:', error);
       // Even if there's an error, clear everything and navigate
       sessionStorage.setItem('justLoggedOut', 'true');
-      setSession(null);
-      setUser(null);
+      setSessionWithDebug(null);
+      setUserWithDebug(null);
 
       // Clear all storage
       const keysToRemove = [];

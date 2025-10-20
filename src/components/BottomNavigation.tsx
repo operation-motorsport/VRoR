@@ -4,7 +4,9 @@ import { useAuth } from '../hooks/useAuth';
 export function BottomNavigation() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
+
+  console.log('🧭 BottomNavigation render - user:', user ? 'present' : 'null', 'location:', location.pathname);
 
   const navItems = [
     {
