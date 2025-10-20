@@ -18,11 +18,28 @@ export function LoginForm({ }: LoginFormProps) {
 
   // Redirect to veterans page when user is authenticated
   useEffect(() => {
+    console.log('LoginForm redirect check - user:', user ? 'present' : 'null', 'authLoading:', authLoading);
+
     if (user && !authLoading) {
       console.log('✅ User authenticated, redirecting to /veterans');
       navigate('/veterans', { replace: true });
     }
   }, [user, authLoading, navigate]);
+
+  // Fallback redirect timeout after successful login
+  useEffect(() => {
+    if (success && success.includes('Redirecting')) {
+      console.log('🔄 Setting fallback redirect timeout...');
+      const redirectTimeout = setTimeout(() => {
+        if (!user) {
+          console.log('⚠️ Fallback redirect triggered - forcing navigation');
+          navigate('/veterans', { replace: true });
+        }
+      }, 5000); // 5 second fallback
+
+      return () => clearTimeout(redirectTimeout);
+    }
+  }, [success, user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +54,14 @@ export function LoginForm({ }: LoginFormProps) {
       await signIn(email, password);
       console.log('✅ Sign in successful, waiting for auth state update...');
       setSuccess('Signed in successfully! Redirecting...');
-      // Navigation will happen in useEffect when user state is set
+
+      // Immediate redirect attempt after 2 seconds
+      setTimeout(() => {
+        console.log('🚀 Attempting immediate redirect...');
+        navigate('/veterans', { replace: true });
+      }, 2000);
+
+      // Navigation will also happen in useEffect when user state is set
     } catch (err: any) {
       let errorMessage = 'An error occurred';
 
