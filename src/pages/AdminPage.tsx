@@ -112,15 +112,23 @@ export function AdminPage() {
 
       try {
         // Get veterans count
-        const { count: veteransCount } = await supabase
+        console.log('🔍 Fetching veterans count from database...');
+        const { count: veteransCount, error: veteransError } = await supabase
           .from('veterans')
           .select('*', { count: 'exact', head: true });
+
+        if (veteransError) {
+          console.error('❌ Veterans count database error:', veteransError);
+          throw veteransError;
+        }
+
         totalVeterans = veteransCount || 0;
         console.log('✅ Veterans count from database:', totalVeterans);
       } catch (error) {
-        console.log('❌ Failed to get veterans count, using fallback');
+        console.log('❌ Failed to get veterans count, using fallback. Error:', error);
         // Fallback - use mock data count that matches VeteransPage
-        totalVeterans = 5; // Updated to match actual data
+        totalVeterans = 5; // Matches the 5 mock veterans in VeteransPage
+        console.log('🔄 Using fallback veterans count:', totalVeterans);
       }
 
       try {

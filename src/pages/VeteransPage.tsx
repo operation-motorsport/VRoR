@@ -96,6 +96,48 @@ export function VeteransPage() {
           emergency_contact_phone: '555-0202',
           created_at: '2024-01-02',
           updated_at: '2024-01-02'
+        },
+        {
+          id: '3',
+          first_name: 'Sarah',
+          last_name: 'Davis',
+          email: 'sarah.davis@email.com',
+          phone: '555-0301',
+          military_branch: 'US Air Force',
+          service_years: '2015-2023',
+          medical_notes: 'PTSD',
+          emergency_contact_name: 'Mark Davis',
+          emergency_contact_phone: '555-0302',
+          created_at: '2024-01-03',
+          updated_at: '2024-01-03'
+        },
+        {
+          id: '4',
+          first_name: 'Robert',
+          last_name: 'Wilson',
+          email: 'robert.wilson@email.com',
+          phone: '555-0401',
+          military_branch: 'US Navy',
+          service_years: '2008-2016',
+          medical_notes: 'Hearing loss',
+          emergency_contact_name: 'Lisa Wilson',
+          emergency_contact_phone: '555-0402',
+          created_at: '2024-01-04',
+          updated_at: '2024-01-04'
+        },
+        {
+          id: '5',
+          first_name: 'Jennifer',
+          last_name: 'Brown',
+          email: 'jennifer.brown@email.com',
+          phone: '555-0501',
+          military_branch: 'US Coast Guard',
+          service_years: '2013-2021',
+          medical_notes: 'Back injury',
+          emergency_contact_name: 'Tom Brown',
+          emergency_contact_phone: '555-0502',
+          created_at: '2024-01-05',
+          updated_at: '2024-01-05'
         }
       ];
       setVeterans(mockVeterans);
