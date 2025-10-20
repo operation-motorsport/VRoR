@@ -183,8 +183,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const fetchUserProfile = async (authUser: SupabaseUser) => {
+    console.log('🔄 fetchUserProfile called for user:', authUser.id, authUser.email);
+
     try {
-      console.log('Fetching user profile for:', authUser.id);
+      // Determine user role first
+      const adminEmails = [
+        'ntdow@outlook.com',
+        'tiffany.lodder@operationmotorsport.org',
+        'jason.leach@operationmotorsport.org',
+        'admin@operationmotorsport.org'
+      ];
+
+      const userEmail = authUser.email || '';
+      const fallbackRole: 'admin' | 'staff' = adminEmails.includes(userEmail.toLowerCase()) ? 'admin' : 'staff';
 
       // Try to fetch user profile from database first
       try {
@@ -195,57 +206,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .eq('id', authUser.id)
           .single();
 
-        if (profileError) {
-          console.error('❌ Database error fetching user profile:', profileError);
-          throw profileError;
-        }
-
-        if (userProfile) {
+        if (!profileError && userProfile) {
           console.log('✅ User profile found in database:', userProfile);
           setUserWithDebug(userProfile);
+          console.log('✅ User state set from database profile');
           return;
+        } else {
+          console.log('❌ Database query failed or no profile found:', profileError);
         }
       } catch (error) {
-        console.error('❌ Failed to fetch user profile from database:', error);
+        console.error('❌ Database fetch error:', error);
       }
 
-      // Fallback: Create temporary user profile with email-based role assignment
-      console.log('🔄 Falling back to temporary user profile creation...');
-      const adminEmails = [
-        'ntdow@outlook.com',
-        'tiffany.lodder@operationmotorsport.org',
-        'jason.leach@operationmotorsport.org',
-        'admin@operationmotorsport.org'
-      ];
-
-      const userEmail = authUser.email || '';
-      const userRole: 'admin' | 'staff' = adminEmails.includes(userEmail.toLowerCase()) ? 'admin' : 'staff';
-
-      console.log(`Creating temporary user profile with ${userRole} role for ${userEmail}...`);
+      // ALWAYS create fallback user profile to ensure login works
+      console.log(`🔄 Creating fallback user profile with ${fallbackRole} role for ${userEmail}...`);
       const tempUser = {
         id: authUser.id,
         email: userEmail,
-        role: userRole,
+        role: fallbackRole,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
 
       setUserWithDebug(tempUser);
-      console.log(`Temporary user profile created with ${userRole} role:`, tempUser);
+      console.log(`✅ Fallback user profile created with ${fallbackRole} role:`, tempUser);
 
     } catch (error) {
-      console.error('Error creating user profile:', error);
-      // Even on error, create minimal user object
-      setUserWithDebug({
+      console.error('❌ Critical error in fetchUserProfile:', error);
+
+      // EMERGENCY fallback - ensure user is ALWAYS set
+      const emergencyUser = {
         id: authUser.id,
         email: authUser.email || '',
-        role: 'staff',
+        role: 'staff' as const,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
-      });
+      };
+
+      setUserWithDebug(emergencyUser);
+      console.log('🚨 Emergency user profile created:', emergencyUser);
     } finally {
-      // ALWAYS set loading to false, regardless of success or failure
-      console.log('🔄 Setting loading=false in finally block');
+      // ALWAYS set loading to false
+      console.log('🔄 Setting loading=false in fetchUserProfile finally block');
       setLoading(false);
     }
   };
