@@ -34,21 +34,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Get initial session
+    // Failsafe timeout to prevent infinite loading
+    const loadingTimeout = setTimeout(() => {
+      console.warn('⚠️ Loading timeout reached, forcing loading=false');
+      console.log('🔄 Timeout fallback: clearing auth state');
+      setSession(null);
+      setUser(null);
+      setLoading(false);
+    }, 8000); // 8 second timeout (session fetch has 5s timeout)
+
+    // Get initial session with timeout protection
     const getSession = async () => {
       try {
-        console.log('Getting initial session...');
-        const { data: { session: initialSession } } = await supabase.auth.getSession();
-        console.log('Initial session:', initialSession);
+        console.log('🔄 Getting initial session...');
+
+        // Add timeout to getSession call specifically
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Session fetch timeout')), 5000)
+        );
+
+        const { data: { session: initialSession } } = await Promise.race([
+          sessionPromise,
+          timeoutPromise
+        ]) as any;
+
+        console.log('✅ Initial session retrieved:', initialSession);
         setSession(initialSession);
+
         if (initialSession?.user) {
+          console.log('👤 User found in session, fetching profile...');
           await fetchUserProfile(initialSession.user);
         } else {
-          // No session found, stop loading
+          console.log('❌ No session found, stopping loading');
           setLoading(false);
         }
       } catch (error) {
-        console.error('Error getting session:', error);
+        console.error('❌ Error getting session:', error);
+        console.log('🔄 Falling back to no session state');
+        setSession(null);
+        setUser(null);
         setLoading(false);
       }
     };
@@ -58,18 +83,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state change:', event, session);
+        console.log('🔄 Auth state change event:', event, 'Session:', session);
         setSession(session);
         if (session?.user) {
+          console.log('👤 User found in auth change, fetching profile...');
           await fetchUserProfile(session.user);
         } else {
+          console.log('❌ No user in auth change, clearing state');
           setUser(null);
+          setLoading(false);
         }
-        setLoading(false);
       }
     );
 
     return () => {
+      clearTimeout(loadingTimeout);
       subscription.unsubscribe();
     };
   }, []);
@@ -78,77 +106,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log('Fetching user profile for:', authUser.id);
 
-      // Try to fetch user profile from database first
-      console.log('Fetching user profile from database...');
-
-      try {
-        const { data: userProfile, error: profileError } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', authUser.id)
-          .single();
-
-        if (profileError) {
-          console.error('Database error fetching user profile:', profileError);
-          throw profileError;
-        }
-
-        if (userProfile) {
-          console.log('✅ User profile found in database:', userProfile);
-          setUser(userProfile);
-          console.log('🔄 Setting loading=false after database profile found');
-          setLoading(false);
-          return;
-        }
-      } catch (error) {
-        console.error('Failed to fetch user profile, creating temporary one:', error);
-      }
-
-      // Fallback: Create temporary user profile with staff role (not admin)
+      // For now, always create a temporary user profile to avoid database issues
       console.log('Creating temporary user profile with staff role...');
-      setUser({
+      const tempUser = {
         id: authUser.id,
         email: authUser.email || '',
-        role: 'staff', // Default to staff, not admin
+        role: 'staff' as const, // Default to staff, not admin
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
-      });
-      console.log('Temporary user profile created with staff role');
-      console.log('🔄 Setting loading=false after temporary profile created');
-      setLoading(false);
+      };
 
-      // TODO: Re-enable database query after fixing connection issues
-      /*
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', authUser.id)
-        .single();
+      setUser(tempUser);
+      console.log('Temporary user profile created with staff role:', tempUser);
 
-      console.log('User profile query result:', { data, error });
-
-      if (error && error.code === 'PGRST116') {
-        console.log('Creating new user profile...');
-        const newUser = await createUserProfile(authUser.id, authUser.email || '');
-        console.log('New user created:', newUser);
-        setUser(newUser);
-      } else if (error) {
-        console.error('Database error:', error);
-        setUser({
-          id: authUser.id,
-          email: authUser.email || '',
-          role: 'staff',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        });
-      } else if (data) {
-        console.log('User profile found:', data);
-        setUser(data);
-      }
-      */
     } catch (error) {
-      console.error('Error fetching user profile:', error);
-      // Fallback: create minimal user object
+      console.error('Error creating user profile:', error);
+      // Even on error, create minimal user object
       setUser({
         id: authUser.id,
         email: authUser.email || '',
@@ -156,7 +129,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       });
-      console.log('🔄 Setting loading=false after error fallback');
+    } finally {
+      // ALWAYS set loading to false, regardless of success or failure
+      console.log('🔄 Setting loading=false in finally block');
       setLoading(false);
     }
   };

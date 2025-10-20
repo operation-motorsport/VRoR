@@ -356,7 +356,7 @@ export function VeteransPage() {
   }
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="p-4 space-y-4 pb-8">
       <h1 className="text-2xl font-bold text-gray-900">Beneficiaries</h1>
 
       {/* Success/Error Messages */}

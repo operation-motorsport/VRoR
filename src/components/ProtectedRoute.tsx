@@ -19,12 +19,14 @@ export function ProtectedRoute({ children, adminOnly = false }: ProtectedRoutePr
   }
 
   if (loading) {
+    console.log('ProtectedRoute: Still loading, user:', user, 'loading:', loading);
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-          <p className="text-xs text-gray-400 mt-2">If this takes too long, check console for errors</p>
+          <p className="text-gray-600">Loading authentication...</p>
+          <p className="text-xs text-gray-400 mt-2">Restoring your session, please wait</p>
+          <p className="text-xs text-gray-400 mt-1">Check console for debug information</p>
         </div>
       </div>
     );

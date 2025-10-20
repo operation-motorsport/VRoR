@@ -18,7 +18,7 @@ export function Layout({ children }: LayoutProps) {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <TopHeader />
 
-      <main className="flex-1 pb-16 safe-area-inset">
+      <main className="flex-1 pb-20 safe-area-inset">
         {children}
       </main>
 
