@@ -188,7 +188,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       // Determine user role first
       const adminEmails = [
-        'ntdow@outlook.com',
+        'nate.dowd@operationmotorsport.org',
         'tiffany.lodder@operationmotorsport.org',
         'jason.leach@operationmotorsport.org',
         'admin@operationmotorsport.org'
