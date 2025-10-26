@@ -197,14 +197,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userEmail = authUser.email || '';
       const fallbackRole: 'admin' | 'staff' = adminEmails.includes(userEmail.toLowerCase()) ? 'admin' : 'staff';
 
-      // Try to fetch user profile from database first
+      // Try to fetch user profile from database first with timeout protection
       try {
         console.log('🔍 Attempting to fetch user profile from database...');
-        const { data: userProfile, error: profileError } = await supabase
+
+        // Add 3-second timeout to database query
+        const dbQueryPromise = supabase
           .from('users')
           .select('*')
           .eq('id', authUser.id)
           .single();
+
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Database query timeout')), 3000)
+        );
+
+        const { data: userProfile, error: profileError } = await Promise.race([
+          dbQueryPromise,
+          timeoutPromise
+        ]) as any;
 
         if (!profileError && userProfile) {
           console.log('✅ User profile found in database:', userProfile);
@@ -215,7 +226,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           console.log('❌ Database query failed or no profile found:', profileError);
         }
       } catch (error) {
-        console.error('❌ Database fetch error:', error);
+        console.error('❌ Database fetch error (will use fallback):', error);
       }
 
       // ALWAYS create fallback user profile to ensure login works
