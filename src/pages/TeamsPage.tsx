@@ -39,6 +39,17 @@ export function TeamsPage() {
     fetchTeams();
   }, []);
 
+  // Auto-clear success/error messages after 5 seconds
+  useEffect(() => {
+    if (submitSuccess || submitError) {
+      const timer = setTimeout(() => {
+        setSubmitSuccess(null);
+        setSubmitError(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [submitSuccess, submitError]);
+
   const fetchTeams = async () => {
     try {
       console.log('Fetching race teams from database...');
@@ -264,7 +275,11 @@ export function TeamsPage() {
         <div className="flex justify-center">
           <button
             className="btn-primary"
-            onClick={() => setShowAddForm(true)}
+            onClick={() => {
+              setShowAddForm(true);
+              setSubmitError(null);
+              setSubmitSuccess(null);
+            }}
           >
             + Add Race Team
           </button>

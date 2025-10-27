@@ -34,6 +34,17 @@ export function EventsPage() {
     fetchEvents();
   }, []);
 
+  // Auto-clear success/error messages after 5 seconds
+  useEffect(() => {
+    if (submitSuccess || submitError) {
+      const timer = setTimeout(() => {
+        setSubmitSuccess(null);
+        setSubmitError(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [submitSuccess, submitError]);
+
   const fetchEvents = async () => {
     try {
       console.log('Fetching events from database...');
@@ -258,7 +269,11 @@ export function EventsPage() {
         <div className="flex justify-center">
           <button
             className="btn-primary"
-            onClick={() => setShowAddForm(true)}
+            onClick={() => {
+              setShowAddForm(true);
+              setSubmitError(null);
+              setSubmitSuccess(null);
+            }}
           >
             + Add Event
           </button>
