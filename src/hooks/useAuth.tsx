@@ -76,24 +76,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Failsafe timeout to prevent infinite loading
+    // Failsafe timeout to prevent infinite loading (longer for mobile)
     const loadingTimeout = setTimeout(() => {
       console.warn('⚠️ Loading timeout reached, forcing loading=false');
+
+      // Try to recover from sessionStorage before clearing
+      try {
+        const storedUser = sessionStorage.getItem('authUser');
+        const storedSession = sessionStorage.getItem('authSession');
+
+        if (storedUser && storedSession) {
+          console.log('✅ Timeout recovery: Using stored auth state');
+          const parsedUser = JSON.parse(storedUser);
+          setUserWithDebug(parsedUser);
+          setLoading(false);
+          return;
+        }
+      } catch (recoveryError) {
+        console.error('❌ Timeout recovery failed:', recoveryError);
+      }
+
       console.log('🔄 Timeout fallback: clearing auth state');
       setSessionWithDebug(null);
       setUserWithDebug(null);
       setLoading(false);
-    }, 8000); // 8 second timeout (session fetch has 5s timeout)
+    }, 15000); // 15 second timeout (increased for mobile)
 
     // Get initial session with timeout protection
     const getSession = async () => {
       try {
         console.log('🔄 Getting initial session...');
 
-        // Add timeout to getSession call specifically
+        // Add timeout to getSession call (longer for mobile)
         const sessionPromise = supabase.auth.getSession();
         const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Session fetch timeout')), 5000)
+          setTimeout(() => reject(new Error('Session fetch timeout')), 10000)
         );
 
         const { data: { session: initialSession } } = await Promise.race([
@@ -162,9 +179,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // User is already set and matches, just ensure loading is false
             setLoading(false);
           }
-        } else if (event === 'SIGNED_OUT' || (!session && event !== 'INITIAL_SESSION')) {
-          console.log('❌ User signed out or session lost, clearing state');
+        } else if (event === 'SIGNED_OUT') {
+          console.log('❌ User signed out, clearing state');
           setUserWithDebug(null);
+          setLoading(false);
+        } else if (!session && event !== 'INITIAL_SESSION') {
+          console.log('⚠️ Session lost, attempting recovery from storage');
+          // Don't immediately clear - try to recover from storage
+          const storedUser = sessionStorage.getItem('authUser');
+          if (storedUser) {
+            console.log('✅ Recovered user from storage');
+            try {
+              setUserWithDebug(JSON.parse(storedUser));
+            } catch {
+              console.error('❌ Failed to parse stored user');
+              setUserWithDebug(null);
+            }
+          } else {
+            console.log('❌ No stored user, clearing state');
+            setUserWithDebug(null);
+          }
           setLoading(false);
         } else if (event === 'INITIAL_SESSION') {
           console.log('🔄 Initial session event, handling in getSession');
@@ -201,7 +235,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         console.log('🔍 Attempting to fetch user profile from database...');
 
-        // Add 3-second timeout to database query
+        // Add timeout to database query (longer for mobile)
         const dbQueryPromise = supabase
           .from('users')
           .select('*')
@@ -209,7 +243,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .single();
 
         const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Database query timeout')), 3000)
+          setTimeout(() => reject(new Error('Database query timeout')), 8000)
         );
 
         const { data: userProfile, error: profileError } = await Promise.race([
