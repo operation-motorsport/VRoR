@@ -40,6 +40,17 @@ export function AdminPage() {
     fetchData();
   }, []);
 
+  // Auto-clear success/error messages after 5 seconds
+  useEffect(() => {
+    if (createSuccess || createError) {
+      const timer = setTimeout(() => {
+        setCreateSuccess(null);
+        setCreateError(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [createSuccess, createError]);
+
   const fetchData = async () => {
     try {
       // Try to fetch users from database first
@@ -257,24 +268,23 @@ export function AdminPage() {
     setDeleteLoading(true);
 
     try {
-      // Delete user from database
-      const { error } = await supabase.auth.admin.deleteUser(deletingUser.id);
-
-      if (error) throw error;
-
-      // Also remove from users table
-      await supabase
+      // Delete from users table
+      const { error } = await supabase
         .from('users')
         .delete()
         .eq('id', deletingUser.id);
 
+      if (error) throw error;
+
+      // Note: Cannot delete from auth.users from client side (requires service role)
+      // The auth record will remain but won't be able to access anything without a users table entry
+
       setCreateSuccess(`User ${deletingUser.email} deleted successfully!`);
       setDeletingUser(null);
       fetchData(); // Refresh the user list
-    } catch {
-      // For now, just remove from mock data since we're using mock users
-      setUsers(users.filter(u => u.id !== deletingUser.id));
-      setCreateSuccess(`User ${deletingUser.email} deleted successfully!`);
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      setCreateError(error.message || 'Failed to delete user');
       setDeletingUser(null);
     } finally {
       setDeleteLoading(false);
@@ -306,7 +316,11 @@ export function AdminPage() {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
         <button
-          onClick={() => setShowCreateUser(true)}
+          onClick={() => {
+            setShowCreateUser(true);
+            setCreateError(null);
+            setCreateSuccess(null);
+          }}
           className="btn-primary text-xl px-3 py-2"
         >
           +
