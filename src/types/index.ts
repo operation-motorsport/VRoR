@@ -102,7 +102,7 @@ export interface FileAttachment {
   file_path: string;
   file_size: number;
   file_type: string;
-  related_type?: 'veteran' | 'race_team' | 'event' | 'note' | 'general';
+  related_type: 'veteran' | 'race_team' | 'event' | 'note';
   related_id?: string;
   uploaded_by: string;
   created_at: string;

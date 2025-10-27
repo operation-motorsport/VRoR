@@ -97,7 +97,8 @@ export function FilesPage() {
           file_path: filePath,
           file_size: uploadFile.size,
           file_type: uploadFile.type,
-          related_type: 'general',
+          related_type: 'note',  // Use 'note' instead of 'general' since it's an allowed enum value
+          related_id: null,
           uploaded_by: user.id
         }])
         .select()
