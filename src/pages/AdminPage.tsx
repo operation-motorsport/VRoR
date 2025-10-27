@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import type { User } from '../types';
 
 export function AdminPage() {
+  const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateUser, setShowCreateUser] = useState(false);
@@ -604,21 +606,30 @@ export function AdminPage() {
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
 
         <div className="grid grid-cols-1 gap-3">
-          <button className="btn-primary justify-start">
+          <button
+            onClick={() => navigate('/veterans', { state: { openAddForm: true } })}
+            className="btn-primary justify-start"
+          >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             Add New Beneficiary
           </button>
 
-          <button className="btn-primary justify-start">
+          <button
+            onClick={() => navigate('/teams', { state: { openAddForm: true } })}
+            className="btn-primary justify-start"
+          >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
             Add New Race Team
           </button>
 
-          <button className="btn-primary justify-start">
+          <button
+            onClick={() => navigate('/events', { state: { openAddForm: true } })}
+            className="btn-primary justify-start"
+          >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>

@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import type { Event } from '../types';
 import { useAuth } from '../hooks/useAuth';
 
 export function EventsPage() {
+  const location = useLocation();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -44,6 +46,15 @@ export function EventsPage() {
       return () => clearTimeout(timer);
     }
   }, [submitSuccess, submitError]);
+
+  // Check if we should open the add form (from navigation state)
+  useEffect(() => {
+    if (location.state?.openAddForm) {
+      setShowAddForm(true);
+      // Clear the state so it doesn't reopen on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   const fetchEvents = async () => {
     try {

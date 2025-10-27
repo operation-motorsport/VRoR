@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import type { RaceTeam } from '../types';
 import { useAuth } from '../hooks/useAuth';
 
 export function TeamsPage() {
+  const location = useLocation();
   const [teams, setTeams] = useState<RaceTeam[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -49,6 +51,15 @@ export function TeamsPage() {
       return () => clearTimeout(timer);
     }
   }, [submitSuccess, submitError]);
+
+  // Check if we should open the add form (from navigation state)
+  useEffect(() => {
+    if (location.state?.openAddForm) {
+      setShowAddForm(true);
+      // Clear the state so it doesn't reopen on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   const fetchTeams = async () => {
     try {

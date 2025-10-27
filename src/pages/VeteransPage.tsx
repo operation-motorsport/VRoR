@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import type { Veteran, RaceTeam } from '../types';
 import { useAuth } from '../hooks/useAuth';
 
 export function VeteransPage() {
+  const location = useLocation();
   const [veterans, setVeterans] = useState<Veteran[]>([]);
   const [raceTeams, setRaceTeams] = useState<RaceTeam[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,6 +50,15 @@ export function VeteransPage() {
     fetchVeterans();
     fetchRaceTeams();
   }, []);
+
+  // Check if we should open the add form (from navigation state)
+  useEffect(() => {
+    if (location.state?.openAddForm) {
+      setShowAddForm(true);
+      // Clear the state so it doesn't reopen on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   const fetchVeterans = async () => {
     try {
