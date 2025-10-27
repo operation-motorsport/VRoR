@@ -102,9 +102,29 @@ export interface FileAttachment {
   file_path: string;
   file_size: number;
   file_type: string;
-  related_type: 'veteran' | 'race_team' | 'event' | 'note';
-  related_id: string;
+  related_type?: 'veteran' | 'race_team' | 'event' | 'note' | 'general';
+  related_id?: string;
   uploaded_by: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  file_id?: string;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserNotification {
+  id: string;
+  notification_id: string;
+  user_id: string;
+  is_read: boolean;
+  read_at?: string;
+  created_at: string;
+  notification?: Notification;
 }

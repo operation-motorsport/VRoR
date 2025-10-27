@@ -8,6 +8,8 @@ import { TeamsPage } from './pages/TeamsPage';
 import { EventsPage } from './pages/EventsPage';
 import { SchedulePage } from './pages/SchedulePage';
 import { AdminPage } from './pages/AdminPage';
+import { FilesPage } from './pages/FilesPage';
+import { NotificationsPage } from './pages/NotificationsPage';
 
 function App() {
   return (
@@ -62,6 +64,24 @@ function App() {
               element={
                 <ProtectedRoute adminOnly>
                   <AdminPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/files"
+              element={
+                <ProtectedRoute>
+                  <FilesPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/notifications"
+              element={
+                <ProtectedRoute>
+                  <NotificationsPage />
                 </ProtectedRoute>
               }
             />

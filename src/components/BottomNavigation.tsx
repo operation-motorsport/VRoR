@@ -1,12 +1,57 @@
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 
 export function BottomNavigation() {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAdmin, user } = useAuth();
+  const [unreadCount, setUnreadCount] = useState(0);
 
   console.log('🧭 BottomNavigation render - user:', user ? 'present' : 'null', 'isAdmin:', isAdmin, 'userRole:', user?.role, 'location:', location.pathname);
+
+  // Fetch unread notification count
+  useEffect(() => {
+    if (user) {
+      fetchUnreadCount();
+
+      // Subscribe to changes in user_notifications
+      const subscription = supabase
+        .channel('user_notifications_changes')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'user_notifications',
+          filter: `user_id=eq.${user.id}`
+        }, () => {
+          fetchUnreadCount();
+        })
+        .subscribe();
+
+      return () => {
+        subscription.unsubscribe();
+      };
+    }
+  }, [user]);
+
+  const fetchUnreadCount = async () => {
+    if (!user) return;
+
+    try {
+      const { count, error } = await supabase
+        .from('user_notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('is_read', false);
+
+      if (error) throw error;
+
+      setUnreadCount(count || 0);
+    } catch (error) {
+      console.error('Error fetching unread count:', error);
+    }
+  };
 
   const navItems = [
     {
@@ -49,6 +94,17 @@ export function BottomNavigation() {
         </svg>
       ),
     },
+    {
+      id: 'notifications',
+      label: 'Notifications',
+      path: '/notifications',
+      badge: unreadCount,
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+      ),
+    },
   ];
 
   // Add admin-only items
@@ -77,15 +133,20 @@ export function BottomNavigation() {
             <button
               key={item.id}
               onClick={() => navigate(item.path)}
-              className={`flex-1 touch-target py-2 px-1 text-center transition-colors ${
+              className={`flex-1 touch-target py-2 px-1 text-center transition-colors relative ${
                 isActive
                   ? 'text-primary-600 bg-primary-50'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
               <div className="flex flex-col items-center space-y-1">
-                <div className={isActive ? 'text-primary-600' : 'text-gray-400'}>
+                <div className={`relative ${isActive ? 'text-primary-600' : 'text-gray-400'}`}>
                   {item.icon}
+                  {item.badge && item.badge > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                      {item.badge > 9 ? '9+' : item.badge}
+                    </span>
+                  )}
                 </div>
                 <span className="text-xs font-medium truncate">
                   {item.label}
