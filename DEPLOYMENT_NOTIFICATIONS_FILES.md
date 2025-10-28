@@ -1,5 +1,36 @@
 # Files & Notifications Feature Deployment Guide
 
+## ⚠️ CURRENT STATUS - DEBUGGING FILE UPLOAD ISSUE
+
+**Problem:** File upload is failing with "row violates row level security policy" error
+
+**What's been done:**
+1. ✅ Created notifications tables (run `CREATE_NOTIFICATIONS_TABLE.sql`)
+2. ✅ Created storage bucket named `files`
+3. ✅ Fixed RLS policies (run `FIX_FILE_ATTACHMENTS_RLS.sql`)
+4. ✅ Made `related_id` column nullable (run `FIX_FILE_ATTACHMENTS_SCHEMA.sql`)
+5. ✅ Added detailed error logging to code
+
+**Next Step - DEBUGGING:**
+
+After the latest deployment completes:
+
+1. **Hard refresh browser** (Ctrl+Shift+R)
+2. **Open browser console** (F12 → Console tab)
+3. **Navigate to Files page**
+4. **Try to upload a file**
+5. **Copy ALL console output** including:
+   - "File uploaded to storage, creating database record..."
+   - "User ID: ..."
+   - "File details: ..."
+   - "Attempting to insert: ..."
+   - "❌ Database insert error:" (with all error details)
+6. **Share the complete console output with Claude**
+
+This will show the exact column/constraint causing the problem so it can be fixed.
+
+---
+
 ## Prerequisites
 Before deploying the code, you need to set up the database and storage.
 
