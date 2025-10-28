@@ -88,24 +88,39 @@ export function FilesPage() {
       }
 
       console.log('File uploaded to storage, creating database record...');
+      console.log('User ID:', user.id);
+      console.log('File details:', {
+        filename: uploadFile.name,
+        file_path: filePath,
+        file_size: uploadFile.size,
+        file_type: uploadFile.type
+      });
 
       // Create file record in database
+      const insertData = {
+        filename: uploadFile.name,
+        file_path: filePath,
+        file_size: uploadFile.size,
+        file_type: uploadFile.type,
+        related_type: 'note',
+        related_id: null,
+        uploaded_by: user.id
+      };
+
+      console.log('Attempting to insert:', insertData);
+
       const { data: fileData, error: dbError } = await supabase
         .from('file_attachments')
-        .insert([{
-          filename: uploadFile.name,
-          file_path: filePath,
-          file_size: uploadFile.size,
-          file_type: uploadFile.type,
-          related_type: 'note',  // Use 'note' instead of 'general' since it's an allowed enum value
-          related_id: null,
-          uploaded_by: user.id
-        }])
+        .insert([insertData])
         .select()
         .single();
 
       if (dbError) {
-        console.error('Database insert error:', dbError);
+        console.error('❌ Database insert error:', dbError);
+        console.error('Error code:', dbError.code);
+        console.error('Error message:', dbError.message);
+        console.error('Error details:', dbError.details);
+        console.error('Error hint:', dbError.hint);
         throw dbError;
       }
 
