@@ -8,6 +8,7 @@ import { TeamsPage } from './pages/TeamsPage';
 import { EventsPage } from './pages/EventsPage';
 import { SchedulePage } from './pages/SchedulePage';
 import { AdminPage } from './pages/AdminPage';
+import { ResetPasswordPage } from './pages/ResetPasswordPage';
 
 function App() {
   return (
@@ -64,6 +65,11 @@ function App() {
                   <AdminPage />
                 </ProtectedRoute>
               }
+            />
+
+            <Route
+              path="/reset-password"
+              element={<ResetPasswordPage />}
             />
           </Routes>
         </Layout>
