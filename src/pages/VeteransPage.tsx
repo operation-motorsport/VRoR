@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import type { Veteran, RaceTeam } from '../types';
+import type { Veteran } from '../types';
 import { useAuth } from '../hooks/useAuth';
 
 export function VeteransPage() {
   const location = useLocation();
   const [veterans, setVeterans] = useState<Veteran[]>([]);
-  const [raceTeams, setRaceTeams] = useState<RaceTeam[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedVeteran, setSelectedVeteran] = useState<Veteran | null>(null);
@@ -18,11 +17,9 @@ export function VeteransPage() {
     email: '',
     phone: '',
     military_branch: '',
-    service_years: '',
     medical_notes: '',
     emergency_contact_name: '',
-    emergency_contact_phone: '',
-    race_team_name: ''
+    emergency_contact_phone: ''
   });
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -34,11 +31,9 @@ export function VeteransPage() {
     email: '',
     phone: '',
     military_branch: '',
-    service_years: '',
     medical_notes: '',
     emergency_contact_name: '',
-    emergency_contact_phone: '',
-    race_team_name: ''
+    emergency_contact_phone: ''
   });
   const [editLoading, setEditLoading] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
@@ -48,7 +43,6 @@ export function VeteransPage() {
 
   useEffect(() => {
     fetchVeterans();
-    fetchRaceTeams();
   }, []);
 
   // Check if we should open the add form (from navigation state)
@@ -157,59 +151,6 @@ export function VeteransPage() {
     }
   };
 
-  const fetchRaceTeams = async () => {
-    try {
-      // TODO: When database is ready, uncomment this database query:
-      /*
-      console.log('Fetching race teams from database...');
-      const { data, error } = await supabase
-        .from('race_teams') // Verify this table name matches your database schema
-        .select('*')
-        .order('name', { ascending: true });
-
-      if (error) {
-        console.error('Database error:', error);
-        throw error;
-      }
-
-      console.log('Race teams loaded:', data?.length || 0);
-      setRaceTeams(data || []);
-      */
-
-      // TEMPORARY: Use same mock data as TeamsPage until database is properly configured
-      console.log('Using mock race teams data (same as TeamsPage)...');
-      const mockRaceTeams = [
-        {
-          id: '1',
-          name: 'Thunder Racing',
-          contact_name: 'Mike Thompson',
-          contact_email: 'mike@thunderracing.com',
-          contact_phone: '555-0301',
-          vehicle_info: 'NASCAR Cup Series #42',
-          notes: 'Experienced with veteran drivers',
-          created_at: '2024-01-01',
-          updated_at: '2024-01-01'
-        },
-        {
-          id: '2',
-          name: 'Victory Lane Motorsports',
-          contact_name: 'Sarah Davis',
-          contact_email: 'sarah@victorylane.com',
-          contact_phone: '555-0302',
-          vehicle_info: 'IndyCar Dallara DW12',
-          notes: 'Veteran-owned team',
-          created_at: '2024-01-02',
-          updated_at: '2024-01-02'
-        }
-      ];
-      setRaceTeams(mockRaceTeams);
-    } catch (error) {
-      console.error('Error fetching race teams:', error);
-      // Additional fallback
-      setRaceTeams([]);
-    }
-  };
-
   const filteredVeterans = veterans.filter(veteran =>
     `${veteran.first_name} ${veteran.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
     veteran.military_branch.toLowerCase().includes(searchTerm.toLowerCase())
@@ -233,11 +174,9 @@ export function VeteransPage() {
           email: addFormData.email || null,
           phone: addFormData.phone || null,
           military_branch: addFormData.military_branch,
-          service_years: addFormData.service_years || null,
           medical_notes: addFormData.medical_notes || null,
           emergency_contact_name: addFormData.emergency_contact_name || null,
-          emergency_contact_phone: addFormData.emergency_contact_phone || null,
-          race_team_name: addFormData.race_team_name || null
+          emergency_contact_phone: addFormData.emergency_contact_phone || null
         }])
         .select()
         .single();
@@ -260,11 +199,9 @@ export function VeteransPage() {
         email: '',
         phone: '',
         military_branch: '',
-        service_years: '',
         medical_notes: '',
         emergency_contact_name: '',
-        emergency_contact_phone: '',
-        race_team_name: ''
+        emergency_contact_phone: ''
       });
 
       setShowAddForm(false);
@@ -284,11 +221,9 @@ export function VeteransPage() {
       email: '',
       phone: '',
       military_branch: '',
-      service_years: '',
       medical_notes: '',
       emergency_contact_name: '',
-      emergency_contact_phone: '',
-      race_team_name: ''
+      emergency_contact_phone: ''
     });
     setSubmitError(null);
     setSubmitSuccess(null);
@@ -302,11 +237,9 @@ export function VeteransPage() {
       email: veteran.email || '',
       phone: veteran.phone || '',
       military_branch: veteran.military_branch,
-      service_years: veteran.service_years || '',
       medical_notes: veteran.medical_notes || '',
       emergency_contact_name: veteran.emergency_contact_name || '',
-      emergency_contact_phone: veteran.emergency_contact_phone || '',
-      race_team_name: veteran.race_team_name || ''
+      emergency_contact_phone: veteran.emergency_contact_phone || ''
     });
     setEditError(null);
   };
@@ -327,11 +260,9 @@ export function VeteransPage() {
           email: editFormData.email || null,
           phone: editFormData.phone || null,
           military_branch: editFormData.military_branch,
-          service_years: editFormData.service_years || null,
           medical_notes: editFormData.medical_notes || null,
           emergency_contact_name: editFormData.emergency_contact_name || null,
-          emergency_contact_phone: editFormData.emergency_contact_phone || null,
-          race_team_name: editFormData.race_team_name || null
+          emergency_contact_phone: editFormData.emergency_contact_phone || null
         })
         .eq('id', editingVeteran.id);
 
@@ -351,11 +282,9 @@ export function VeteransPage() {
               email: editFormData.email || undefined,
               phone: editFormData.phone || undefined,
               military_branch: editFormData.military_branch,
-              service_years: editFormData.service_years || '',
               medical_notes: editFormData.medical_notes || undefined,
               emergency_contact_name: editFormData.emergency_contact_name || undefined,
               emergency_contact_phone: editFormData.emergency_contact_phone || undefined,
-              race_team_name: editFormData.race_team_name || undefined,
               updated_at: new Date().toISOString()
             }
           : v
@@ -480,18 +409,6 @@ export function VeteransPage() {
                       <p className="text-sm text-gray-600">
                         📧 {veteran.email}
                       </p>
-                    )}
-                    {veteran.race_team_name && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation(); // Prevent opening veteran details
-                          // TODO: Show race team info modal
-                          alert(`Race Team: ${veteran.race_team_name}\n\nRace team details will be shown here.`);
-                        }}
-                        className="text-sm text-blue-600 hover:text-blue-800 underline mt-1 block"
-                      >
-                        🏎️ {veteran.race_team_name}
-                      </button>
                     )}
                   </div>
                 </div>
@@ -625,18 +542,6 @@ export function VeteransPage() {
                     <option value="US Space Force">US Space Force</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Service Years
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g., 2010-2018"
-                    value={addFormData.service_years}
-                    onChange={(e) => setAddFormData({ ...addFormData, service_years: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  />
-                </div>
               </div>
 
               <div>
@@ -675,24 +580,6 @@ export function VeteransPage() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   />
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Race Team
-                </label>
-                <select
-                  value={addFormData.race_team_name}
-                  onChange={(e) => setAddFormData({ ...addFormData, race_team_name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                >
-                  <option value="">Select a race team</option>
-                  {raceTeams.map((team) => (
-                    <option key={team.id} value={team.name}>
-                      {team.name}
-                    </option>
-                  ))}
-                </select>
               </div>
 
               <div className="flex space-x-3 pt-4 border-t border-gray-200">
@@ -811,18 +698,6 @@ export function VeteransPage() {
                     <option value="Space Force">Space Force</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Years of Service
-                  </label>
-                  <input
-                    type="text"
-                    value={editFormData.service_years}
-                    onChange={(e) => setEditFormData({ ...editFormData, service_years: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    placeholder="e.g., 2018-2022"
-                  />
-                </div>
               </div>
 
               <div>
@@ -861,24 +736,6 @@ export function VeteransPage() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   />
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Race Team
-                </label>
-                <select
-                  value={editFormData.race_team_name}
-                  onChange={(e) => setEditFormData({ ...editFormData, race_team_name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                >
-                  <option value="">Select a race team</option>
-                  {raceTeams.map((team) => (
-                    <option key={team.id} value={team.name}>
-                      {team.name}
-                    </option>
-                  ))}
-                </select>
               </div>
 
               <div className="flex space-x-3 pt-4 border-t border-gray-200">
@@ -964,17 +821,12 @@ export function VeteransPage() {
 
               <div>
                 <h3 className="text-sm font-medium text-gray-700 mb-1">Military Service</h3>
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium">Branch:</span> {selectedVeteran.military_branch}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium">Service Years:</span> {selectedVeteran.service_years || 'Not provided'}
-                  </p>
-                </div>
+                <p className="text-sm text-gray-600">
+                  <span className="font-medium">Branch:</span> {selectedVeteran.military_branch}
+                </p>
               </div>
 
-              {selectedVeteran.medical_notes && (
+              {isAdmin && selectedVeteran.medical_notes && (
                 <div>
                   <h3 className="text-sm font-medium text-gray-700 mb-1">Medical Notes</h3>
                   <p className="text-sm text-gray-600 bg-yellow-50 p-3 rounded-md">
@@ -983,30 +835,17 @@ export function VeteransPage() {
                 </div>
               )}
 
-              <div>
-                <h3 className="text-sm font-medium text-gray-700 mb-1">Emergency Contact</h3>
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium">Name:</span> {selectedVeteran.emergency_contact_name || 'Not provided'}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium">Phone:</span> {selectedVeteran.emergency_contact_phone || 'Not provided'}
-                  </p>
-                </div>
-              </div>
-
-              {selectedVeteran.race_team_name && (
+              {isAdmin && (
                 <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-1">Race Team</h3>
-                  <button
-                    onClick={() => {
-                      // TODO: Show race team contact info modal
-                      alert(`Race Team: ${selectedVeteran.race_team_name}\n\nRace team contact details will be shown here.`);
-                    }}
-                    className="text-sm text-blue-600 hover:text-blue-800 underline"
-                  >
-                    🏎️ {selectedVeteran.race_team_name}
-                  </button>
+                  <h3 className="text-sm font-medium text-gray-700 mb-1">Emergency Contact</h3>
+                  <div className="space-y-2">
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Name:</span> {selectedVeteran.emergency_contact_name || 'Not provided'}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Phone:</span> {selectedVeteran.emergency_contact_phone || 'Not provided'}
+                    </p>
+                  </div>
                 </div>
               )}
 

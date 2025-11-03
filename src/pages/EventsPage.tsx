@@ -13,7 +13,8 @@ export function EventsPage() {
   const [addFormData, setAddFormData] = useState({
     name: '',
     date: '',
-    location: '',
+    time_from: '',
+    time_to: '',
     description: ''
   });
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -23,7 +24,8 @@ export function EventsPage() {
   const [editFormData, setEditFormData] = useState({
     name: '',
     date: '',
-    location: '',
+    time_from: '',
+    time_to: '',
     description: ''
   });
   const [editLoading, setEditLoading] = useState(false);
@@ -80,7 +82,6 @@ export function EventsPage() {
           id: '1',
           name: "Veterans Race of Remembrance 2024",
           date: '2024-11-11',
-          location: 'Daytona International Speedway',
           description: 'Annual flagship event honoring our veterans with high-speed racing experiences.',
           created_at: '2024-01-01',
           updated_at: '2024-01-01'
@@ -89,7 +90,6 @@ export function EventsPage() {
           id: '2',
           name: 'Spring Training Event',
           date: '2024-04-15',
-          location: 'Road Atlanta',
           description: 'Pre-season training and preparation event for new veteran participants.',
           created_at: '2024-01-02',
           updated_at: '2024-01-02'
@@ -98,7 +98,6 @@ export function EventsPage() {
           id: '3',
           name: 'Memorial Day Track Experience',
           date: '2024-05-27',
-          location: 'Charlotte Motor Speedway',
           description: 'Special Memorial Day event featuring parade laps and ceremonies.',
           created_at: '2024-01-03',
           updated_at: '2024-01-03'
@@ -124,7 +123,8 @@ export function EventsPage() {
         .insert([{
           name: addFormData.name,
           date: addFormData.date,
-          location: addFormData.location,
+          time_from: addFormData.time_from || null,
+          time_to: addFormData.time_to || null,
           description: addFormData.description || null
         }])
         .select()
@@ -144,7 +144,8 @@ export function EventsPage() {
       setAddFormData({
         name: '',
         date: '',
-        location: '',
+        time_from: '',
+        time_to: '',
         description: ''
       });
 
@@ -162,7 +163,8 @@ export function EventsPage() {
     setAddFormData({
       name: '',
       date: '',
-      location: '',
+      time_from: '',
+      time_to: '',
       description: ''
     });
     setSubmitError(null);
@@ -174,7 +176,8 @@ export function EventsPage() {
     setEditFormData({
       name: event.name,
       date: event.date,
-      location: event.location,
+      time_from: event.time_from || '',
+      time_to: event.time_to || '',
       description: event.description || ''
     });
     setEditError(null);
@@ -193,7 +196,8 @@ export function EventsPage() {
         .update({
           name: editFormData.name,
           date: editFormData.date,
-          location: editFormData.location,
+          time_from: editFormData.time_from || null,
+          time_to: editFormData.time_to || null,
           description: editFormData.description || null
         })
         .eq('id', editingEvent.id);
@@ -245,6 +249,29 @@ export function EventsPage() {
     });
   };
 
+  const formatTime = (timeString: string) => {
+    // Convert 24-hour time to 12-hour format
+    const [hours, minutes] = timeString.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${minutes} ${ampm}`;
+  };
+
+  const formatTimeRange = (timeFrom?: string, timeTo?: string) => {
+    if (!timeFrom && !timeTo) return null;
+    if (timeFrom && timeTo) {
+      return `${formatTime(timeFrom)} - ${formatTime(timeTo)}`;
+    }
+    if (timeFrom) {
+      return `Starting at ${formatTime(timeFrom)}`;
+    }
+    if (timeTo) {
+      return `Until ${formatTime(timeTo)}`;
+    }
+    return null;
+  };
+
   if (loading) {
     return (
       <div className="p-4">
@@ -261,7 +288,7 @@ export function EventsPage() {
   }
 
   return (
-    <div className="p-4 space-y-4 pb-8">
+    <div className="p-4 space-y-4 pb-24">
       <h1 className="text-2xl font-bold text-gray-900">Events</h1>
 
       {/* Success/Error Messages */}
@@ -330,13 +357,14 @@ export function EventsPage() {
                         {formatDate(event.date)}
                       </div>
 
-                      <div className="flex items-center">
-                        <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        {event.location}
-                      </div>
+                      {formatTimeRange(event.time_from, event.time_to) && (
+                        <div className="flex items-center">
+                          <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          {formatTimeRange(event.time_from, event.time_to)}
+                        </div>
+                      )}
                     </div>
 
                     {event.description && (
@@ -432,30 +460,42 @@ export function EventsPage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Location *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={addFormData.location}
-                  onChange={(e) => setAddFormData({ ...addFormData, location: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  placeholder="e.g., Daytona International Speedway"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Start Time
+                  </label>
+                  <input
+                    type="time"
+                    value={addFormData.time_from}
+                    onChange={(e) => setAddFormData({ ...addFormData, time_from: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    End Time
+                  </label>
+                  <input
+                    type="time"
+                    value={addFormData.time_to}
+                    onChange={(e) => setAddFormData({ ...addFormData, time_to: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  />
+                </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
+                  Event Notes
                 </label>
                 <textarea
                   rows={4}
                   value={addFormData.description}
                   onChange={(e) => setAddFormData({ ...addFormData, description: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  placeholder="Event details and description..."
+                  placeholder="Event notes and details..."
                 />
               </div>
 
@@ -469,7 +509,7 @@ export function EventsPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={submitLoading || !addFormData.name || !addFormData.date || !addFormData.location}
+                  disabled={submitLoading || !addFormData.name || !addFormData.date}
                   className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {submitLoading ? 'Adding...' : 'Add Event'}
@@ -529,22 +569,35 @@ export function EventsPage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Location *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={editFormData.location}
-                  onChange={(e) => setEditFormData({ ...editFormData, location: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Start Time
+                  </label>
+                  <input
+                    type="time"
+                    value={editFormData.time_from}
+                    onChange={(e) => setEditFormData({ ...editFormData, time_from: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    End Time
+                  </label>
+                  <input
+                    type="time"
+                    value={editFormData.time_to}
+                    onChange={(e) => setEditFormData({ ...editFormData, time_to: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  />
+                </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
+                  Event Notes
                 </label>
                 <textarea
                   rows={4}
@@ -564,7 +617,7 @@ export function EventsPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={editLoading || !editFormData.name || !editFormData.date || !editFormData.location}
+                  disabled={editLoading || !editFormData.name || !editFormData.date}
                   className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {editLoading ? 'Updating...' : 'Update Event'}
@@ -638,14 +691,16 @@ export function EventsPage() {
                 <p className="text-sm text-gray-600">{formatDate(selectedEvent.date)}</p>
               </div>
 
-              <div>
-                <h3 className="text-sm font-medium text-gray-700 mb-1">Location</h3>
-                <p className="text-sm text-gray-600">{selectedEvent.location}</p>
-              </div>
+              {formatTimeRange(selectedEvent.time_from, selectedEvent.time_to) && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-700 mb-1">Time</h3>
+                  <p className="text-sm text-gray-600">{formatTimeRange(selectedEvent.time_from, selectedEvent.time_to)}</p>
+                </div>
+              )}
 
               {selectedEvent.description && (
                 <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-1">Description</h3>
+                  <h3 className="text-sm font-medium text-gray-700 mb-1">Event Notes</h3>
                   <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
                     {selectedEvent.description}
                   </p>

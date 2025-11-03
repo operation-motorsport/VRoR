@@ -14,7 +14,6 @@ export function TeamsPage() {
   const [addFormData, setAddFormData] = useState({
     name: '',
     contact_name: '',
-    contact_email: '',
     contact_phone: '',
     vehicle_info: '',
     notes: ''
@@ -26,7 +25,6 @@ export function TeamsPage() {
   const [editFormData, setEditFormData] = useState({
     name: '',
     contact_name: '',
-    contact_email: '',
     contact_phone: '',
     vehicle_info: '',
     notes: ''
@@ -119,12 +117,11 @@ export function TeamsPage() {
     try {
       console.log('Adding race team to database...');
 
-      const { data, error } = await supabase
+      const { data, error} = await supabase
         .from('race_teams')
         .insert([{
           name: addFormData.name,
           contact_name: addFormData.contact_name,
-          contact_email: addFormData.contact_email || null,
           contact_phone: addFormData.contact_phone || null,
           vehicle_info: addFormData.vehicle_info || null,
           notes: addFormData.notes || null
@@ -146,7 +143,6 @@ export function TeamsPage() {
       setAddFormData({
         name: '',
         contact_name: '',
-        contact_email: '',
         contact_phone: '',
         vehicle_info: '',
         notes: ''
@@ -166,7 +162,6 @@ export function TeamsPage() {
     setAddFormData({
       name: '',
       contact_name: '',
-      contact_email: '',
       contact_phone: '',
       vehicle_info: '',
       notes: ''
@@ -180,7 +175,6 @@ export function TeamsPage() {
     setEditFormData({
       name: team.name,
       contact_name: team.contact_name,
-      contact_email: team.contact_email || '',
       contact_phone: team.contact_phone || '',
       vehicle_info: team.vehicle_info || '',
       notes: team.notes || ''
@@ -201,7 +195,6 @@ export function TeamsPage() {
         .update({
           name: editFormData.name,
           contact_name: editFormData.contact_name,
-          contact_email: editFormData.contact_email || null,
           contact_phone: editFormData.contact_phone || null,
           vehicle_info: editFormData.vehicle_info || null,
           notes: editFormData.notes || null
@@ -336,7 +329,7 @@ export function TeamsPage() {
                     Contact: {team.contact_name}
                   </p>
                   <p className="text-sm text-gray-500 mt-1">
-                    {team.contact_email} • {team.contact_phone}
+                    {team.contact_phone}
                   </p>
                   {team.vehicle_info && (
                     <p className="text-sm text-blue-600 mt-1 font-medium">
@@ -405,11 +398,10 @@ export function TeamsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Team Name *
+                    Team Name
                   </label>
                   <input
                     type="text"
-                    required
                     value={addFormData.name}
                     onChange={(e) => setAddFormData({ ...addFormData, name: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -431,19 +423,6 @@ export function TeamsPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Contact Email *
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={addFormData.contact_email}
-                    onChange={(e) => setAddFormData({ ...addFormData, contact_email: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Contact Phone *
                   </label>
                   <input
@@ -457,14 +436,14 @@ export function TeamsPage() {
 
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Vehicle Info
+                    Position / Role
                   </label>
                   <input
                     type="text"
                     value={addFormData.vehicle_info}
                     onChange={(e) => setAddFormData({ ...addFormData, vehicle_info: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    placeholder="e.g., NASCAR Cup Series #42"
+                    placeholder="e.g., Crew Chief, Driver Coach, Spotter"
                   />
                 </div>
 
@@ -492,7 +471,7 @@ export function TeamsPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={submitLoading || !addFormData.name || !addFormData.contact_name || !addFormData.contact_email || !addFormData.contact_phone}
+                  disabled={submitLoading || !addFormData.contact_name || !addFormData.contact_phone}
                   className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {submitLoading ? 'Adding...' : 'Add Team'}
@@ -529,11 +508,10 @@ export function TeamsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Team Name *
+                    Team Name
                   </label>
                   <input
                     type="text"
-                    required
                     value={editFormData.name}
                     onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -555,19 +533,6 @@ export function TeamsPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Contact Email *
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={editFormData.contact_email}
-                    onChange={(e) => setEditFormData({ ...editFormData, contact_email: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Contact Phone *
                   </label>
                   <input
@@ -581,14 +546,14 @@ export function TeamsPage() {
 
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Vehicle Info
+                    Position / Role
                   </label>
                   <input
                     type="text"
                     value={editFormData.vehicle_info}
                     onChange={(e) => setEditFormData({ ...editFormData, vehicle_info: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    placeholder="e.g., NASCAR Cup Series #42"
+                    placeholder="e.g., Crew Chief, Driver Coach, Spotter"
                   />
                 </div>
 
@@ -616,7 +581,7 @@ export function TeamsPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={editLoading || !editFormData.name || !editFormData.contact_name || !editFormData.contact_email || !editFormData.contact_phone}
+                  disabled={editLoading || !editFormData.contact_name || !editFormData.contact_phone}
                   className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {editLoading ? 'Updating...' : 'Update Team'}
@@ -682,9 +647,6 @@ export function TeamsPage() {
                     <span className="font-medium">Name:</span> {selectedTeam.contact_name}
                   </p>
                   <p className="text-sm text-gray-600">
-                    <span className="font-medium">Email:</span> {selectedTeam.contact_email || 'Not provided'}
-                  </p>
-                  <p className="text-sm text-gray-600">
                     <span className="font-medium">Phone:</span> {selectedTeam.contact_phone || 'Not provided'}
                   </p>
                 </div>
@@ -692,7 +654,7 @@ export function TeamsPage() {
 
               {selectedTeam.vehicle_info && (
                 <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-1">Vehicle Information</h3>
+                  <h3 className="text-sm font-medium text-gray-700 mb-1">Position / Role</h3>
                   <p className="text-sm text-gray-600">{selectedTeam.vehicle_info}</p>
                 </div>
               )}

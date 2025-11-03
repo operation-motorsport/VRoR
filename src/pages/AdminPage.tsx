@@ -26,6 +26,9 @@ export function AdminPage() {
   const [editError, setEditError] = useState<string | null>(null);
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [changingPasswordUser, setChangingPasswordUser] = useState<User | null>(null);
+  const [passwordChangeLoading, setPasswordChangeLoading] = useState(false);
+  const [passwordChangeError, setPasswordChangeError] = useState<string | null>(null);
 
   const { signUp } = useAuth();
   const [stats, setStats] = useState({
@@ -293,6 +296,34 @@ export function AdminPage() {
     }
   };
 
+  const handleSendPasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!changingPasswordUser) return;
+
+    setPasswordChangeLoading(true);
+    setPasswordChangeError(null);
+
+    try {
+      // Send password reset email to the user
+      const { error } = await supabase.auth.resetPasswordForEmail(
+        changingPasswordUser.email,
+        {
+          redirectTo: `${window.location.origin}/reset-password`,
+        }
+      );
+
+      if (error) throw error;
+
+      setCreateSuccess(`Password reset email sent to ${changingPasswordUser.email}!`);
+      setChangingPasswordUser(null);
+    } catch (error: any) {
+      console.error('Error sending password reset:', error);
+      setPasswordChangeError(error.message || 'Failed to send password reset email.');
+    } finally {
+      setPasswordChangeLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-4">
@@ -502,6 +533,47 @@ export function AdminPage() {
         </div>
       )}
 
+      {/* Reset Password Modal */}
+      {changingPasswordUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Reset Password</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Send a password reset email to: <strong>{changingPasswordUser.email}</strong>
+            </p>
+            <p className="text-sm text-gray-500 mb-4">
+              The user will receive an email with a link to reset their password.
+            </p>
+            {passwordChangeError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-4">
+                {passwordChangeError}
+              </div>
+            )}
+            <form onSubmit={handleSendPasswordReset} className="space-y-4">
+              <div className="flex space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setChangingPasswordUser(null);
+                    setPasswordChangeError(null);
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={passwordChangeLoading}
+                  className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {passwordChangeLoading ? 'Sending...' : 'Send Reset Email'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Statistics Cards */}
       <div className="grid grid-cols-2 gap-4">
         <div className="card">
@@ -565,6 +637,16 @@ export function AdminPage() {
                   }`}>
                     {user.role}
                   </span>
+
+                  <button
+                    onClick={() => setChangingPasswordUser(user)}
+                    className="p-1 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                    title="Send password reset email"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                    </svg>
+                  </button>
 
                   <button
                     onClick={() => handleEditUser(user)}
@@ -634,16 +716,6 @@ export function AdminPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
             Add New OPMO Event
-          </button>
-
-          <button
-            onClick={() => navigate('/files')}
-            className="btn-secondary justify-start"
-          >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
-            </svg>
-            Manage File Uploads
           </button>
         </div>
       </div>

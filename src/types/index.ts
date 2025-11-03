@@ -40,7 +40,8 @@ export interface Event {
   id: string;
   name: string;
   date: string;
-  location: string;
+  time_from?: string;
+  time_to?: string;
   description?: string;
   created_at: string;
   updated_at: string;
